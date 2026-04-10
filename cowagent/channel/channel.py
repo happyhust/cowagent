@@ -4,7 +4,7 @@ Message sending channel abstract class
 
 from cowagent.bridge.bridge import Bridge
 from cowagent.bridge.context import Context
-from cowagent.bridge.reply import ReplyType, Reply
+from cowagent.bridge.reply import ReplyType, Reply, sanitize_reply
 from cowagent.common.log import logger
 from cowagent.config import conf
 
@@ -60,6 +60,14 @@ class Channel(object):
         :param msg: message object
         """
         raise NotImplementedError
+
+    def send_safe(self, reply: Reply, context: Context) -> Reply:
+        """
+        Sanitize reply content before sending to prevent sensitive info leakage.
+        Returns the (possibly sanitized) reply.
+        """
+        reply = sanitize_reply(reply)
+        return reply
 
     # 统一的发送函数，每个Channel自行实现，根据reply的type字段发送不同类型的消息
     def send(self, reply: Reply, context: Context):

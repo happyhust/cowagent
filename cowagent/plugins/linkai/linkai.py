@@ -1,5 +1,5 @@
 from cowagent.bridge.context import ContextType
-from cowagent.bridge.reply import Reply, ReplyType
+from cowagent.bridge.reply import Reply, ReplyType, sanitize_reply
 from cowagent.plugins import *
 from .midjourney import MJBot
 from .summary import LinkSummary
@@ -368,6 +368,7 @@ class LinkAI(Plugin):
 
 def _send_info(e_context: EventContext, content: str):
     reply = Reply(ReplyType.TEXT, content)
+    reply = sanitize_reply(reply)
     channel = e_context["channel"]
     channel.send(reply, e_context["context"])
 

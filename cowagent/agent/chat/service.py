@@ -168,6 +168,7 @@ class ChatService:
 
         from cowagent.config import conf
 
+        max_steps = conf().get("agent_max_steps", 15)
         max_context_turns = conf().get("agent_max_context_turns", 20)
 
         # Get full system prompt with skills
@@ -185,7 +186,7 @@ class ChatService:
             model=agent.model,
             system_prompt=full_system_prompt,
             tools=agent.tools,
-            max_turns=agent.max_steps,
+            max_turns=max_steps,
             on_event=on_event,
             messages=messages_copy,
             max_context_turns=max_context_turns,

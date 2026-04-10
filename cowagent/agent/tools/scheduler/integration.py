@@ -7,7 +7,7 @@ from cowagent.config import conf
 from cowagent.common.log import logger
 from cowagent.common.utils import expand_path
 from cowagent.bridge.context import Context, ContextType
-from cowagent.bridge.reply import Reply, ReplyType
+from cowagent.bridge.reply import Reply, ReplyType, sanitize_reply
 
 # Global scheduler service instance
 _scheduler_service = None
@@ -176,6 +176,7 @@ def _execute_agent_task(task: dict, agent_bridge):
                                 )
 
                         # Send the reply
+                        reply = sanitize_reply(reply)
                         channel.send(reply, context)
                         logger.info(
                             f"[Scheduler] Task {task['id']} executed successfully, result sent to {receiver}"
@@ -285,6 +286,7 @@ def _execute_send_message(task: dict, agent_bridge):
                         f"[Scheduler] Registered request_id {request_id} -> session {receiver}"
                     )
 
+                reply = sanitize_reply(reply)
                 channel.send(reply, context)
                 logger.info(
                     f"[Scheduler] Task {task['id']} executed: sent message to {receiver}"
@@ -395,6 +397,7 @@ def _execute_tool_call(task: dict, agent_bridge):
                         f"[Scheduler] Registered request_id {request_id} -> session {receiver}"
                     )
 
+                reply = sanitize_reply(reply)
                 channel.send(reply, context)
                 logger.info(
                     f"[Scheduler] Task {task['id']} executed: sent tool result to {receiver}"

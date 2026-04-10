@@ -1,24 +1,53 @@
 {
+  # 通道类型，支持 weixin, feishu, dingtalk, wecom_bot, web, terminal 等，多个用逗号分隔
   "channel_type": "weixin",
+
+  # LLM 提供商: openai, claude, gemini, qwen, zhipu, moonshot, doubao, deepseek, minimax, modelscope, linkai, baidu, xunfei
   "llm_provider": "minimax",
+  # LLM 模型名称
   "llm_model": "MiniMax-M2.7",
+  # LLM API Key
   "llm_api_key": "",
+  # LLM API Base URL，留空则使用提供商默认地址
   "llm_api_base": "",
+
+  # 语音识别引擎: openai, baidu, google, azure, xunfei, ali
   "voice_to_text": "openai",
+  # 语音合成引擎: openai, baidu, google, azure, xunfei, ali, pytts(offline), elevenlabs, edge(online)
   "text_to_voice": "openai",
+  # 是否使用语音回复语音（需配置对应语音合成引擎的 API Key）
   "voice_reply_voice": false,
+  # 是否开启语音识别
   "speech_recognition": true,
+  # 是否开启群组语音识别
   "group_speech_recognition": false,
+
+  # 是否启用 LinkAI 平台
   "use_linkai": false,
+  # LinkAI 应用代码
   "linkai_app_code": "",
+
+  # 飞书机器人应用 APP ID
   "feishu_app_id": "",
+  # 飞书机器人应用 APP Secret
   "feishu_app_secret": "",
+
+  # 钉钉机器人 Client ID
   "dingtalk_client_id": "",
+  # 钉钉机器人 Client Secret
   "dingtalk_client_secret": "",
+
+  # 企微智能机器人 Bot ID
   "wecom_bot_id": "",
+  # 企微智能机器人长连接 Secret
   "wecom_bot_secret": "",
+
+  # 是否开启 Agent 模式（支持任务规划、工具调用、技能等）
   "agent": true,
+  # Agent 模式下最大上下文 token 数
   "agent_max_context_tokens": 40000,
+  # Agent 模式下最大上下文记忆轮次
   "agent_max_context_turns": 20,
+  # Agent 模式下单次运行最大决策步数
   "agent_max_steps": 15
 }

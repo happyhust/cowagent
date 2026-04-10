@@ -116,9 +116,11 @@ irm https://cdn.link-ai.tech/code/cow/run.ps1 | iex
 
 ### 2.环境安装
 
-支持 Linux、MacOS、Windows 操作系统，可在个人计算机及服务器上运行，需安装 `Python`，Python 版本需在3.7 ~ 3.12 之间。
+支持 Linux、MacOS、Windows 操作系统，可在个人计算机及服务器上运行，需安装 `Python`，Python 版本需在 3.11 及以上。
 
 > 注意：Agent 模式推荐使用源码运行，若选择 Docker 部署则无需安装 python 环境和下载源码，可直接快进到下一节。
+
+项目使用 `uv` 进行 Python 环境管理（Python >= 3.11），推荐使用 `uv` 安装依赖。
 
 **(1) 克隆项目代码：**
 
@@ -129,21 +131,24 @@ cd chatgpt-on-wechat/
 
 若遇到网络问题可使用国内仓库地址：https://gitee.com/zhayujie/chatgpt-on-wechat
 
-**(2) 安装核心依赖 (必选)：**
+**(2) 安装 uv（如未安装）：**
 
 ```bash
-pip3 install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-**(3) 拓展依赖 (可选，建议安装)：**
+**(3) 安装依赖：**
 
 ```bash
-pip3 install -r requirements-optional.txt
+make init                     # 推荐，使用 uv 同步依赖（Python 3.12）
+# 或
+uv sync --all-extras --dev    # 安装全部依赖（含语音、插件等可选依赖）
+# 或
+pip3 install -e ".[all]"      # 使用 pip 安装全部依赖
+pip3 install -e .             # 仅安装核心依赖
 ```
 
-> 国内网络可使用镜像源加速：`pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple`
-
-如果某项依赖安装失败可注释掉对应的行后重试。
+> 国内网络可使用镜像源加速：`pip3 install -e ".[all]" -i https://pypi.tuna.tsinghua.edu.cn/simple`
 
 **(4) 安装 Cow CLI (推荐)：**
 
@@ -176,31 +181,27 @@ cow install-browser
 ```bash
 # config.json 文件内容示例
 {
-  "channel_type": "weixin",                                   # 接入渠道类型，默认为 weixin, 支持修改为 feishu,dingtalk,wecom_bot,qq,wechatcom_app,wechatmp_service,wechatmp,terminal
-  "model": "MiniMax-M2.7",                                    # 模型名称
-  "minimax_api_key": "",                                      # MiniMax API Key
-  "zhipu_ai_api_key": "",                                     # 智谱 GLM API Key
-  "moonshot_api_key": "",                                     # Kimi/Moonshot API Key
-  "ark_api_key": "",                                          # 豆包(火山方舟) API Key
-  "dashscope_api_key": "",                                    # 百炼(通义千问) API Key
-  "claude_api_key": "",                                       # Claude API Key
-  "claude_api_base": "https://api.anthropic.com/v1",          # Claude API 地址，修改可接入三方代理平台
-  "gemini_api_key": "",                                       # Gemini API Key
-  "gemini_api_base": "https://generativelanguage.googleapis.com", # Gemini API 地址
-  "deepseek_api_key": "",                                      # DeepSeek API Key
-  "deepseek_api_base": "https://api.deepseek.com/v1",         # DeepSeek API 地址，可修改为第三方代理
-  "open_ai_api_key": "",                                      # OpenAI API Key
-  "open_ai_api_base": "https://api.openai.com/v1",            # OpenAI API 地址
-  "linkai_api_key": "",                                       # LinkAI API Key
-  "proxy": "",                                                # 代理客户端的 ip 和端口，国内环境需要开启代理的可填写该项，如 "127.0.0.1:7890"
-  "speech_recognition": false,                                # 是否开启语音识别
+  "channel_type": "weixin",                                   # 接入渠道类型，默认为 weixin, 支持 feishu,dingtalk,wecom_bot,qq,wechatcom_app,wechatmp_service,wechatmp,terminal
+  "llm_provider": "minimax",                                  # LLM 提供商
+  "llm_model": "MiniMax-M2.7",                                # 模型名称
+  "llm_api_key": "",                                          # LLM API Key
+  "llm_api_base": "",                                         # LLM API Base URL，留空使用默认
+  "speech_recognition": true,                                 # 是否开启语音识别
   "group_speech_recognition": false,                          # 是否开启群组语音识别
   "voice_reply_voice": false,                                 # 是否使用语音回复语音
-  "use_linkai": false,                                        # 是否使用 LinkAI 接口，默认关闭，设置为 true 后可对接 LinkAI 平台模型
+  "voice_to_text": "openai",                                  # 语音识别引擎
+  "text_to_voice": "openai",                                  # 语音合成引擎
+  "use_linkai": false,                                        # 是否使用 LinkAI 接口
+  "linkai_app_code": "",                                      # LinkAI 应用代码
+  "feishu_app_id": "",                                        # 飞书机器人应用 APP ID
+  "feishu_app_secret": "",                                    # 飞书机器人应用 APP Secret
+  "dingtalk_client_id": "",                                   # 钉钉机器人 Client ID
+  "dingtalk_client_secret": "",                               # 钉钉机器人 Client Secret
+  "wecom_bot_id": "",                                         # 企微智能机器人 Bot ID
+  "wecom_bot_secret": "",                                     # 企微智能机器人长连接 Secret
   "agent": true,                                              # 是否启用 Agent 模式，启用后拥有多轮工具决策、长期记忆、Skills 能力等
-  "agent_workspace": "~/.cowagent",                                 # Agent 的工作空间路径，用于存储 memory、skills、系统设定等
   "agent_max_context_tokens": 40000,                          # Agent 模式下最大上下文 tokens，超出将自动丢弃最早的上下文
-  "agent_max_context_turns": 30,                              # Agent 模式下最大上下文记忆轮次，每轮包括一次用户提问和 AI 回复
+  "agent_max_context_turns": 20,                              # Agent 模式下最大上下文记忆轮次，每轮包括一次用户提问和 AI 回复
   "agent_max_steps": 15                                       # Agent 模式下单次任务的最大决策步数，超出后将停止继续调用工具
 }
 ```
@@ -218,7 +219,8 @@ cow install-browser
 <details>
 <summary>2. 其他配置</summary>
 
-+ `model`: 模型名称，Agent 模式下推荐使用 `MiniMax-M2.7`、`glm-5-turbo`、`kimi-k2.5`、`qwen3.6-plus`、`claude-sonnet-4-6`、`gemini-3.1-pro-preview`，全部模型名称参考[common/const.py](https://github.com/zhayujie/chatgpt-on-wechat/blob/master/common/const.py)文件
++ `llm_provider` / `llm_model`: LLM 提供商和模型名称，Agent 模式下推荐使用 `MiniMax-M2.7`、`glm-5-turbo`、`kimi-k2.5`、`qwen3.6-plus`、`claude-sonnet-4-6`、`gemini-3.1-pro-preview`
++ `llm_api_key` / `llm_api_base`: 统一 API Key 和 Base URL，简化配置
 + `character_desc`：普通对话模式下的机器人系统提示词。在 Agent 模式下该配置不生效，由工作空间中的文件内容构成。
 + `subscribe_msg`：订阅消息，公众号和企业微信 channel 中请填写，当被订阅时会自动回复， 可使用特殊占位符。目前支持的占位符有{trigger_prefix}，在程序中它会自动替换成 bot 的触发词。
 </details>
@@ -226,8 +228,8 @@ cow install-browser
 <details>
 <summary>3. LinkAI 配置</summary>
 
-+ `use_linkai`: 是否使用 LinkAI 接口，默认关闭，设置为 true 后可对接 LinkAI 平台，使用模型、知识库、工作流、插件等技能, 参考[接口文档](https://docs.link-ai.tech/platform/api/chat)
-+ `linkai_api_key`: LinkAI Api Key，可在 [控制台](https://link-ai.tech/console/interface) 创建
++ `use_linkai`: 是否使用 LinkAI 接口，默认关闭，设置为 true 后可对接 LinkAI 平台，使用模型、知识库、工作流、插件等技能
++ `linkai_app_code`: LinkAI 应用代码
 </details>
 
 注：全部配置项说明可在 [`config.py`](https://github.com/zhayujie/chatgpt-on-wechat/blob/master/config.py) 文件中查看。
@@ -884,7 +886,56 @@ FAQs： <https://github.com/zhayujie/chatgpt-on-wechat/wiki/FAQs>
 
 # 🛠️ 开发
 
-欢迎接入更多应用通道，参考 [飞书通道](https://github.com/zhayujie/chatgpt-on-wechat/blob/master/channel/feishu/feishu_channel.py) 新增自定义通道，实现接收和发送消息逻辑即可完成接入。同时欢迎贡献新的 Skills，向 [Skill Hub](https://skills.cowagent.ai/submit) 提交技能。
+## 开发命令
+
+项目使用 `uv` 管理 Python 环境（Python 3.12），`ruff` 进行代码检查，`pytest` 运行测试。
+
+```bash
+# 安装依赖
+make init                     # uv 同步依赖（推荐）
+uv sync --all-extras --dev    # 安装全部依赖
+
+# 运行
+python3 -m cowagent           # 前台运行
+python3 -m cowagent --cmd     # 终端模式
+make start                    # 后台启动
+make stop                     # 停止
+make status                   # 查看状态
+
+# 代码质量
+make lint                     # Ruff 检查 + Prettier 检查
+make format                   # Ruff 格式化 + Prettier 格式化
+ruff check cowagent/          # 仅 Python lint
+ruff format cowagent/         # 仅 Python 格式化
+
+# 测试
+make test                     # 运行所有测试
+pytest cowagent/tests/ -v     # 单元测试
+pytest tests/ -v              # 集成测试
+```
+
+## 贡献指南
+
+欢迎接入更多应用通道，参考 [飞书通道](https://github.com/zhayujie/chatgpt-on-wechat/blob/master/cowagent/channel/feishu/feishu_channel.py) 新增自定义通道，实现接收和发送消息逻辑即可完成接入。同时欢迎贡献新的 Skills，向 [Skill Hub](https://skills.cowagent.ai/submit) 提交技能。
+
+### 添加新通道
+
+1. 在 `cowagent/channel/your_channel/` 下创建目录
+2. 实现继承 `ChatChannel` 的通道类，编写 `startup()`, `handle_msg()`, `send()` 方法
+3. 在 `cowagent/channel/channel_factory.py` 中注册
+4. 参考 `cowagent/channel/feishu/feishu_channel.py` 实现
+
+### 添加新模型
+
+1. 在 `cowagent/models/` 下创建 Bot 类，实现 `reply(query, context)` 方法
+2. 在 `cowagent/models/bot_factory.py` 中注册
+3. 在 `cowagent/common/const.py` 中添加模型类型常量
+4. 在 `cowagent/bridge/bridge.py` 中添加路由逻辑
+
+### 添加新 Agent 工具
+
+1. 在 `cowagent/agent/tools/` 下创建继承 `BaseTool` 的工具类
+2. 在 `cowagent/agent/tools/tool_manager.py` 中注册
 
 # ✉ 联系
 

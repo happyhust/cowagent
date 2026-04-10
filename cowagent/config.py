@@ -397,7 +397,38 @@ def get_root():
 
 def read_file(path):
     with open(path, mode="r", encoding="utf-8-sig") as f:
-        return f.read()
+        content = f.read()
+    # Strip #-style comments (optionally preceded by spaces) from each line
+    lines = content.split("\n")
+    stripped = []
+    for line in lines:
+        # Match optional leading spaces + # + rest, or # inside a string value
+        # We only strip # that is NOT inside a JSON string value
+        idx = _comment_start_index(line)
+        if idx is not None:
+            stripped.append(line[:idx])
+        else:
+            stripped.append(line)
+    return "\n".join(stripped)
+
+
+def _comment_start_index(line):
+    """Return the index of # that starts a comment, or None if no comment."""
+    in_string = False
+    escape_next = False
+    for i, ch in enumerate(line):
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == "\\":
+            escape_next = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if not in_string and ch == "#":
+            return i
+    return None
 
 
 def conf():

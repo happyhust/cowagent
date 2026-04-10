@@ -7,7 +7,7 @@ from cowagent.config import conf
 
 from cowagent.plugins import Plugin, Event, EventContext, EventAction, instance as plugins
 from cowagent.bridge.context import ContextType
-from cowagent.bridge.reply import Reply, ReplyType
+from cowagent.bridge.reply import Reply, ReplyType, sanitize_reply
 from cowagent.common.log import logger
 
 # Prevent duplicate warnings when module is imported multiple times
@@ -325,5 +325,6 @@ class AgentPlugin(Plugin):
 
 def _send_text(e_context: EventContext, content: str):
     reply = Reply(ReplyType.TEXT, content)
+    reply = sanitize_reply(reply)
     channel = e_context["channel"]
     channel.send(reply, e_context["context"])

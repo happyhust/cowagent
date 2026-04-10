@@ -382,7 +382,26 @@ class WeixinChannel(ChatChannel):
 
                 # Process messages
                 msgs = resp.get("msgs", [])
+                if msgs:
+                    logger.info(
+                        f"[Weixin] getUpdates returned {len(msgs)} message(s), "
+                        f"buf_len={len(resp.get('get_updates_buf', ''))}"
+                    )
+                else:
+                    # Log the full response structure (without message content) for debugging
+                    resp_keys = list(resp.keys())
+                    logger.debug(
+                        f"[Weixin] getUpdates returned no msgs, "
+                        f"resp_keys={resp_keys}, "
+                        f"errcode={resp.get('errcode')}, ret={resp.get('ret')}"
+                    )
                 for raw_msg in msgs:
+                    logger.info(
+                        f"[Weixin] Raw message: message_type={raw_msg.get('message_type')}, "
+                        f"from_user_id={raw_msg.get('from_user_id')}, "
+                        f"seq={raw_msg.get('seq')}, "
+                        f"keys={list(raw_msg.keys())[:15]}"
+                    )
                     try:
                         self._process_message(raw_msg)
                     except Exception as e:
@@ -410,6 +429,10 @@ class WeixinChannel(ChatChannel):
         """Parse a single inbound message and produce to the handling queue."""
         msg_type = raw_msg.get("message_type", 0)
         if msg_type != 1:  # Only process USER messages (type=1)
+            logger.warning(
+                f"[Weixin] Message skipped: message_type={msg_type} (expected 1), "
+                f"from_user_id={raw_msg.get('from_user_id')}"
+            )
             return
 
         msg_id = str(raw_msg.get("message_id", raw_msg.get("seq", "")))
@@ -491,8 +514,107 @@ class WeixinChannel(ChatChannel):
             context["origin_ctype"] = ctype
 
         cmsg = context["msg"]
-        context["session_id"] = cmsg.from_user_id
-        context["receiver"] = cmsg.other_user_id
+        is_group = getattr(cmsg, "is_group", False)
+
+        logger.info(
+            f"[Weixin] _compose_context: is_group={is_group}, "
+            f"from_user_id={cmsg.from_user_id}, content={str(content)[:50]}"
+        )
+
+        if is_group:
+            # Group message handling
+            group_name = getattr(cmsg, "other_user_nickname", "") or getattr(
+                cmsg, "other_user_id", ""
+            )
+            group_id = getattr(cmsg, "other_user_id", "")
+
+            group_name_white_list = conf().get("group_name_white_list", [])
+            group_name_keyword_white_list = conf().get(
+                "group_name_keyword_white_list", []
+            )
+
+            def _check_contain(text, keywords):
+                if not keywords:
+                    return False
+                return any(kw in text for kw in keywords)
+
+            whitelisted = (
+                group_name in group_name_white_list
+                or "ALL_GROUP" in group_name_white_list
+                or _check_contain(group_name, group_name_keyword_white_list)
+            )
+            logger.info(
+                f"[Weixin] Group whitelist check: group_name='{group_name}', "
+                f"whitelist={group_name_white_list}, whitelisted={whitelisted}"
+            )
+            if not whitelisted:
+                logger.debug(
+                    f"[Weixin] No need reply, groupName not in whitelist, group_name={group_name}"
+                )
+                return None
+
+            # Session ID: respect group_shared_session config
+            context["isgroup"] = True
+            if conf().get("group_shared_session", True):
+                context["session_id"] = group_id
+            else:
+                context["session_id"] = f"{cmsg.from_user_id}:{group_id}"
+
+            context["receiver"] = group_id
+
+            # @mention / prefix / keyword matching
+            is_at = getattr(cmsg, "is_at", False)
+            match_prefix = check_prefix(content, conf().get("group_chat_prefix"))
+            match_contain = check_contain(content, conf().get("group_chat_keyword"))
+
+            logger.info(
+                f"[Weixin] Group reply check: is_at={is_at}, "
+                f"match_prefix={match_prefix}, match_contain={match_contain}, "
+                f"group_at_off={conf().get('group_at_off', False)}"
+            )
+
+            should_reply = False
+            if is_at and not conf().get("group_at_off", False):
+                should_reply = True  # @mention triggers response
+            if match_prefix is not None:
+                should_reply = True
+                content = content.replace(match_prefix, "", 1).strip()
+            if match_contain:
+                should_reply = True
+
+            if not should_reply:
+                logger.info(
+                    "[Weixin] Group message IGNORED: no @mention/prefix/keyword match. "
+                    f"is_at={is_at}, group_at_off={conf().get('group_at_off', False)}, "
+                    f"at_list={getattr(cmsg, 'at_list', [])}, "
+                    f"content_start={str(content)[:30]}"
+                )
+                return None
+
+            # Strip @mention names from content
+            if is_at and ctype == ContextType.TEXT and cmsg.content:
+                at_list = getattr(cmsg, "at_list", []) or []
+                for at_name in at_list:
+                    if at_name:
+                        content = content.replace(f"@{at_name}", "", 1)
+
+            context.content = content.strip()
+        else:
+            # Private chat
+            context["session_id"] = cmsg.from_user_id
+            context["receiver"] = cmsg.other_user_id
+
+            # Nickname blacklist
+            nick_name_black_list = conf().get("nick_name_black_list", [])
+            nick_name = getattr(cmsg, "from_user_nickname", "")
+            if nick_name and nick_name in nick_name_black_list:
+                logger.warning(f"[Weixin] Nickname '{nick_name}' in blacklist, ignore")
+                return None
+
+        logger.info(
+            f"[Weixin] _compose_context returning: type={context.type}, "
+            f"session_id={context.get('session_id')}, isgroup={context.get('isgroup')}"
+        )
 
         if ctype == ContextType.TEXT:
             img_match_prefix = check_prefix(content, conf().get("image_create_prefix"))

@@ -463,9 +463,10 @@ class Agent:
             messages_copy = self.messages.copy()
             original_length = len(self.messages)
 
-        # Get max_context_turns from config
+        # Get agent limits from config (allows runtime updates via web UI)
         from cowagent.config import conf
 
+        max_steps = conf().get("agent_max_steps", 15)
         max_context_turns = conf().get("agent_max_context_turns", 20)
 
         # Create stream executor with copied message history
@@ -474,7 +475,7 @@ class Agent:
             model=self.model,
             system_prompt=full_system_prompt,
             tools=self.tools,
-            max_turns=self.max_steps,
+            max_turns=max_steps,
             on_event=on_event,
             messages=messages_copy,  # Pass copied message history
             max_context_turns=max_context_turns,

@@ -1441,10 +1441,11 @@ class AgentStreamExecutor:
         # Get context window from cowagent.agent (based on model)
         context_window = self.agent._get_model_context_window()
 
-        # Use configured max_context_tokens if available
-        if hasattr(self.agent, "max_context_tokens") and self.agent.max_context_tokens:
-            max_tokens = self.agent.max_context_tokens
-        else:
+        # Use configured max_context_tokens (read from config for runtime updates)
+        from cowagent.config import conf
+
+        max_tokens = conf().get("agent_max_context_tokens")
+        if not max_tokens:
             # Reserve 10% for response generation
             reserve_tokens = int(context_window * 0.1)
             max_tokens = context_window - reserve_tokens

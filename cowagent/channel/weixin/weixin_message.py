@@ -68,6 +68,14 @@ class WeixinMessage(ChatMessage):
             self.is_at = True
         self.at_list = msg.get("at_list", [])
 
+        logger.debug(
+            f"[WeixinMessage] from_user_id={from_user_id}, is_group={self.is_group}, "
+            f"is_at={self.is_at}, at_list={self.at_list}, "
+            f"actual_user_nickname={self.actual_user_nickname}, "
+            f"other_user_nickname={self.other_user_nickname}, "
+            f"is_group_at_raw={msg.get('is_group_at')}, is_at_raw={msg.get('is_at')}"
+        )
+
         self.from_user_id = from_user_id
         self.from_user_nickname = msg.get("from_user_nickname", from_user_id)
         self.to_user_id = to_user_id

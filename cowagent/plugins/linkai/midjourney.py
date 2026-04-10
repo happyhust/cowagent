@@ -4,7 +4,7 @@ from cowagent.common.log import logger
 import requests
 import threading
 import time
-from cowagent.bridge.reply import Reply, ReplyType
+from cowagent.bridge.reply import Reply, ReplyType, sanitize_reply
 import asyncio
 from cowagent.bridge.context import ContextType
 from cowagent.plugins import EventContext, EventAction
@@ -524,6 +524,7 @@ class MJBot:
 
 def _send(channel, reply: Reply, context, retry_cnt=0):
     try:
+        reply = sanitize_reply(reply)
         channel.send(reply, context)
     except Exception as e:
         logger.error("[WX] sendMsg error: {}".format(str(e)))

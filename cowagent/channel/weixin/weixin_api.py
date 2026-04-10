@@ -98,6 +98,7 @@ class WeixinApi:
             "ilink/bot/getupdates",
             {
                 "get_updates_buf": get_updates_buf,
+                "sync_room_msg": True,
             },
             timeout=timeout + 5,
         )

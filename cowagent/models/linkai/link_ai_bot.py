@@ -10,7 +10,7 @@ from cowagent.models.openai_compatible_bot import OpenAICompatibleBot
 from cowagent.models.chatgpt.chat_gpt_session import ChatGPTSession
 from cowagent.models.session_manager import SessionManager
 from cowagent.bridge.context import Context, ContextType
-from cowagent.bridge.reply import Reply, ReplyType
+from cowagent.bridge.reply import Reply, ReplyType, sanitize_reply
 from cowagent.common.log import logger
 from cowagent.config import conf, pconf
 import threading
@@ -538,6 +538,7 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
                 else:
                     reply_type = ReplyType.IMAGE_URL
                 reply = Reply(reply_type, url)
+                reply = sanitize_reply(reply)
                 channel.send(reply, context)
                 if send_interval:
                     time.sleep(send_interval)

@@ -197,7 +197,12 @@ class FeishuMessage(ChatMessage):
             self.other_user_id = msg.get("chat_id")
             self.actual_user_id = self.from_user_id
             self.content = self.content.replace("@_user_1", "").strip()
-            self.actual_user_nickname = ""
+            self.actual_user_nickname = sender.get("sender_type", {}).get("name", "")
+            # 设置 is_at 和 at_list，用于 chat_channel 中的群消息判断
+            mentions = msg.get("mentions")
+            if mentions:
+                self.is_at = True
+                self.at_list = [m.get("name", "") for m in mentions]
         else:
             # 私聊
             self.other_user_id = self.from_user_id

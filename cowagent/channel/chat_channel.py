@@ -6,7 +6,7 @@ from asyncio import CancelledError
 from concurrent.futures import Future, ThreadPoolExecutor
 
 from cowagent.bridge.context import ContextType, Context
-from cowagent.bridge.reply import ReplyType, Reply
+from cowagent.bridge.reply import ReplyType, Reply, sanitize_reply
 from cowagent.channel.channel import Channel
 from cowagent.common.dequeue import Dequeue
 from cowagent.common import memory
@@ -498,6 +498,7 @@ class ChatChannel(Channel):
 
     def _send(self, reply: Reply, context: Context, retry_cnt=0):
         try:
+            reply = sanitize_reply(reply)
             self.send(reply, context)
         except Exception as e:
             logger.error("[chat_channel] sendMsg error: {}".format(str(e)))
