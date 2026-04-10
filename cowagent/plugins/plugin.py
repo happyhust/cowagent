@@ -2,11 +2,20 @@ import os
 import json
 from cowagent.config import pconf, plugin_config, write_plugin_config
 from cowagent.common.log import logger
+from cowagent.common.utils import expand_path
+from cowagent.config import conf
 
 
 class Plugin:
     def __init__(self):
         self.handlers = {}
+
+    def _plugins_dir(self) -> str:
+        """Get the plugins directory path under agent workspace."""
+        workspace = expand_path(conf().get("agent_workspace", "~/.cowagent"))
+        plugins_dir = os.path.join(workspace, "plugins")
+        os.makedirs(plugins_dir, exist_ok=True)
+        return plugins_dir
 
     def load_config(self) -> dict:
         """
@@ -30,7 +39,7 @@ class Plugin:
         try:
             write_plugin_config({self.name: config})
             # 写入全局配置
-            global_config_path = "./plugins/config.json"
+            global_config_path = os.path.join(self._plugins_dir(), "config.json")
             if os.path.exists(global_config_path):
                 with open(global_config_path, "w", encoding="utf-8") as f:
                     json.dump(plugin_config, f, indent=4, ensure_ascii=False)

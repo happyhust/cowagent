@@ -4,7 +4,7 @@ from cowagent.bridge.reply import Reply
 from cowagent.common import const
 from cowagent.common.log import logger
 from cowagent.common.singleton import singleton
-from cowagent.config import conf
+from cowagent.config import conf, LLM_PROVIDER_TO_BOT_TYPE
 from cowagent.translate.factory import create_translator
 from cowagent.voice.factory import create_voice
 
@@ -18,76 +18,22 @@ class Bridge(object):
             "text_to_voice": conf().get("text_to_voice", "google"),
             "translate": conf().get("translate", "baidu"),
         }
-        # 这边取配置的模型
+        # Resolve chat bot type from unified LLM config
         bot_type = conf().get("bot_type")
         if bot_type:
             self.btype["chat"] = bot_type
         else:
-            model_type = conf().get("model") or const.GPT_41_MINI
+            llm_provider = conf().get("llm_provider", "openai")
+            self.btype["chat"] = LLM_PROVIDER_TO_BOT_TYPE.get(
+                llm_provider, const.OPENAI
+            )
 
-            # Ensure model_type is string to prevent AttributeError when using startswith()
-            # This handles cases where numeric model names (e.g., "1") are parsed as integers from YAML
-            if not isinstance(model_type, str):
-                logger.warning(
-                    f"[Bridge] model_type is not a string: {model_type} (type: {type(model_type).__name__}), converting to string"
-                )
-                model_type = str(model_type)
-
-            if model_type in ["text-davinci-003"]:
-                self.btype["chat"] = const.OPEN_AI
+            # Azure override
             if conf().get("use_azure_chatgpt", False):
                 self.btype["chat"] = const.CHATGPTONAZURE
-            if model_type in ["wenxin", "wenxin-4"]:
-                self.btype["chat"] = const.BAIDU
-            if model_type in ["xunfei"]:
-                self.btype["chat"] = const.XUNFEI
-            if model_type in [
-                const.QWEN,
-                const.QWEN_TURBO,
-                const.QWEN_PLUS,
-                const.QWEN_MAX,
-            ]:
-                self.btype["chat"] = const.QWEN_DASHSCOPE
-            if model_type and (
-                model_type.startswith("qwen")
-                or model_type.startswith("qwq")
-                or model_type.startswith("qvq")
-            ):
-                self.btype["chat"] = const.QWEN_DASHSCOPE
-            if model_type and model_type.startswith("gemini"):
-                self.btype["chat"] = const.GEMINI
-            if model_type and model_type.startswith("glm"):
-                self.btype["chat"] = const.ZHIPU_AI
-            if model_type and model_type.startswith("claude"):
-                self.btype["chat"] = const.CLAUDEAPI
 
-            if model_type in [
-                const.MOONSHOT,
-                "moonshot-v1-8k",
-                "moonshot-v1-32k",
-                "moonshot-v1-128k",
-            ]:
-                self.btype["chat"] = const.MOONSHOT
-            if model_type and model_type.startswith("kimi"):
-                self.btype["chat"] = const.MOONSHOT
-
-            if model_type and model_type.startswith("doubao"):
-                self.btype["chat"] = const.DOUBAO
-
-            if model_type and model_type.startswith("deepseek"):
-                self.btype["chat"] = const.DEEPSEEK
-
-            if model_type in [const.MODELSCOPE]:
-                self.btype["chat"] = const.MODELSCOPE
-
-            # MiniMax models
-            if model_type and (
-                model_type in ["abab6.5-chat", "abab6.5"]
-                or model_type.lower().startswith("minimax")
-            ):
-                self.btype["chat"] = const.MiniMax
-
-            if conf().get("use_linkai") and conf().get("linkai_api_key"):
+            # LinkAI override: if llm_provider is linkai, override voice and chat bots
+            if conf().get("use_linkai"):
                 self.btype["chat"] = const.LINKAI
                 if not conf().get("voice_to_text") or conf().get("voice_to_text") in [
                     "openai"

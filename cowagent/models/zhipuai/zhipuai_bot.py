@@ -19,10 +19,10 @@ class ZHIPUAIBot(Bot, ZhipuAIImage):
     def __init__(self):
         super().__init__()
         self.sessions = SessionManager(
-            ZhipuAISession, model=conf().get("model") or "ZHIPU_AI"
+            ZhipuAISession, model=conf().get("llm_model") or "ZHIPU_AI"
         )
         self.args = {
-            "model": conf().get("model") or "glm-4",  # 对话模型的名称
+            "model": conf().get("llm_model") or "glm-4",  # 对话模型的名称
             "temperature": conf().get(
                 "temperature", 0.9
             ),  # 值在(0,1)之间(智谱AI 的温度不能取 0 或者 1)
@@ -31,8 +31,8 @@ class ZHIPUAIBot(Bot, ZhipuAIImage):
             ),  # 值在(0,1)之间(智谱AI 的 top_p 不能取 0 或者 1)
         }
         # 初始化客户端，支持自定义 API base URL（例如智谱国际版 z.ai）
-        api_key = conf().get("zhipu_ai_api_key")
-        api_base = conf().get("zhipu_ai_api_base")
+        api_key = conf().get("llm_api_key")
+        api_base = conf().get("llm_api_base")
 
         if api_base:
             self.client = ZhipuAiClient(api_key=api_key, base_url=api_base)

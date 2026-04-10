@@ -18,9 +18,9 @@ class DoubaoBot(Bot):
     def __init__(self):
         super().__init__()
         self.sessions = SessionManager(
-            DoubaoSession, model=conf().get("model") or "doubao-seed-2-0-pro-260215"
+            DoubaoSession, model=conf().get("llm_model") or "doubao-seed-2-0-pro-260215"
         )
-        model = conf().get("model") or "doubao-seed-2-0-pro-260215"
+        model = conf().get("llm_model") or "doubao-seed-2-0-pro-260215"
         self.args = {
             "model": model,
             "temperature": conf().get("temperature", 0.8),
@@ -29,11 +29,11 @@ class DoubaoBot(Bot):
 
     @property
     def api_key(self):
-        return conf().get("ark_api_key")
+        return conf().get("llm_api_key")
 
     @property
     def base_url(self):
-        url = conf().get("ark_base_url", "https://ark.cn-beijing.volces.com/api/v3")
+        url = conf().get("llm_api_base", "https://ark.cn-beijing.volces.com/api/v3")
         if url.endswith("/chat/completions"):
             url = url.rsplit("/chat/completions", 1)[0]
         return url.rstrip("/")

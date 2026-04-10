@@ -22,10 +22,10 @@ class LinkAIVoice(Voice):
         logger.debug("[LinkVoice] voice file name={}".format(voice_file))
         try:
             url = (
-                conf().get("linkai_api_base", "https://api.link-ai.tech")
+                conf().get("llm_api_base", "https://api.link-ai.tech")
                 + "/v1/audio/transcriptions"
             )
-            headers = {"Authorization": "Bearer " + conf().get("linkai_api_key")}
+            headers = {"Authorization": "Bearer " + conf().get("llm_api_key")}
             model = None
             if (
                 not conf().get("text_to_voice")
@@ -67,10 +67,10 @@ class LinkAIVoice(Voice):
     def textToVoice(self, text):
         try:
             url = (
-                conf().get("linkai_api_base", "https://api.link-ai.tech")
+                conf().get("llm_api_base", "https://api.link-ai.tech")
                 + "/v1/audio/speech"
             )
-            headers = {"Authorization": "Bearer " + conf().get("linkai_api_key")}
+            headers = {"Authorization": "Bearer " + conf().get("llm_api_key")}
             model = const.TTS_1
             if not conf().get("text_to_voice") or conf().get("text_to_voice") in [
                 "openai",

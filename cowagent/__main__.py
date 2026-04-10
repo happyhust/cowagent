@@ -313,22 +313,35 @@ def run():
         # Parse channel_type into a list
         raw_channel = conf().get("channel_type", "web")
 
+        # Environment variables override config (used by start-ui.sh)
+        env_channel = os.environ.get("COW_CHANNEL")
+        env_web_console = os.environ.get("COW_WEB_CONSOLE")
+
         if "--cmd" in sys.argv:
             channel_names = ["terminal"]
         else:
-            channel_names = _parse_channel_type(raw_channel)
+            if env_channel:
+                channel_names = _parse_channel_type(env_channel)
+            else:
+                channel_names = _parse_channel_type(raw_channel)
             if not channel_names:
                 channel_names = ["web"]
 
         # Auto-start web console unless explicitly disabled
-        web_console_enabled = conf().get("web_console", True)
+        if env_web_console is not None:
+            web_console_enabled = env_web_console.lower() == "true"
+        else:
+            web_console_enabled = conf().get("web_console", True)
         if web_console_enabled and "web" not in channel_names:
             channel_names.append("web")
 
         logger.info(f"[App] Starting channels: {channel_names}")
 
         _channel_mgr = ChannelManager()
-        _channel_mgr.start(channel_names, first_start=True)
+        first_start = True
+        if os.environ.get("COW_SKIP_PLUGINS") == "true":
+            first_start = False
+        _channel_mgr.start(channel_names, first_start=first_start)
 
         while True:
             time.sleep(1)

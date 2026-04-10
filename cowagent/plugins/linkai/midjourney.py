@@ -77,10 +77,10 @@ class MJTask:
 class MJBot:
     def __init__(self, config, fetch_group_app_code):
         self.base_url = (
-            conf().get("linkai_api_base", "https://api.link-ai.tech")
+            conf().get("llm_api_base", "https://api.link-ai.tech")
             + "/v1/img/midjourney"
         )
-        self.headers = {"Authorization": "Bearer " + conf().get("linkai_api_key")}
+        self.headers = {"Authorization": "Bearer " + conf().get("llm_api_key")}
         self.config = config
         self.fetch_group_app_code = fetch_group_app_code
         self.tasks = {}

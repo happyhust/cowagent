@@ -17,16 +17,16 @@ import random
 
 class OpenaiVoice(Voice):
     def __init__(self):
-        openai.api_key = conf().get("open_ai_api_key")
+        openai.api_key = conf().get("llm_api_key")
 
     def voiceToText(self, voice_file):
         logger.debug("[Openai] voice file name={}".format(voice_file))
         try:
             file = open(voice_file, "rb")
-            api_base = conf().get("open_ai_api_base") or "https://api.openai.com/v1"
+            api_base = conf().get("llm_api_base") or "https://api.openai.com/v1"
             url = f"{api_base}/audio/transcriptions"
             headers = {
-                "Authorization": "Bearer " + conf().get("open_ai_api_key"),
+                "Authorization": "Bearer " + conf().get("llm_api_key"),
                 # 'Content-Type': 'multipart/form-data' # 加了会报错，不知道什么原因
             }
             files = {
@@ -51,10 +51,10 @@ class OpenaiVoice(Voice):
 
     def textToVoice(self, text):
         try:
-            api_base = conf().get("open_ai_api_base") or "https://api.openai.com/v1"
+            api_base = conf().get("llm_api_base") or "https://api.openai.com/v1"
             url = f"{api_base}/audio/speech"
             headers = {
-                "Authorization": "Bearer " + conf().get("open_ai_api_key"),
+                "Authorization": "Bearer " + conf().get("llm_api_key"),
                 "Content-Type": "application/json",
             }
             data = {

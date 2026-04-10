@@ -262,23 +262,22 @@ class AgentPlugin(Plugin):
         return
 
     def create_llm_model(self, model_name) -> LLMModel:
-        if conf().get("use_linkai"):
-            api_base = "https://api.link-ai.tech/v1"
-            api_key = conf().get("linkai_api_key")
-        elif model_name.startswith(("gpt", "text-davinci", "o1", "o3")):
-            api_base = conf().get("open_ai_api_base") or "https://api.openai.com/v1"
-            api_key = conf().get("open_ai_api_key")
+        api_base = conf().get("llm_api_base")
+        api_key = conf().get("llm_api_key")
+
+        # Provider-specific defaults based on model prefix
+        if model_name.startswith(("gpt", "text-davinci", "o1", "o3")):
+            if not api_base:
+                api_base = "https://api.openai.com/v1"
         elif model_name.startswith("claude"):
-            return ClaudeModel(model=model_name, api_key=conf().get("claude_api_key"))
+            from cowagent.models.claudeapi.claude_api_bot import ClaudeModel
+            return ClaudeModel(model=model_name, api_key=api_key)
         elif model_name.startswith("moonshot"):
-            api_base = "https://api.moonshot.cn/v1"
-            api_key = conf().get("moonshot_api_key")
+            if not api_base:
+                api_base = "https://api.moonshot.cn/v1"
         elif model_name.startswith("qwen"):
-            api_base = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-            api_key = conf().get("dashscope_api_key")
-        else:
-            api_base = conf().get("open_ai_api_base") or "https://api.openai.com/v1"
-            api_key = conf().get("open_ai_api_key")
+            if not api_base:
+                api_base = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
         llm_model = LLMModel(model=model_name, api_key=api_key, api_base=api_base)
         return llm_model

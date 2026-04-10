@@ -14,6 +14,10 @@ start_project() {
     LOG_DIR=$(dirname "$LOG_FILE")
     mkdir -p "$LOG_DIR"
 
+    # Disable auto-start of web console — WebChannel is part of the process
+    # but the UI frontend can be started separately via make start-ui
+    export COW_WEB_CONSOLE=false
+
     nohup $PYTHON_CMD -m cowagent >> "${LOG_FILE}" 2>&1 &
     echo $! > "${BASE_DIR}/.cowagent.pid"
     echo -e "${GREEN}${EMOJI_COW} CowAgent started (PID=$(cat "${BASE_DIR}/.cowagent.pid"))${NC}"
@@ -30,6 +34,7 @@ start_project() {
     echo -e "  ${GREEN}./scripts/stop.sh${NC}        Stop the service"
     echo -e "  ${GREEN}./scripts/start.sh${NC}       Start the service"
     echo -e "  ${GREEN}./scripts/install.sh${NC}     Install dependencies"
+    echo -e "  ${GREEN}make start-ui${NC}            Start Web UI separately"
     echo -e "${CYAN}${BOLD}=========================================${NC}"
     echo ""
 

@@ -27,18 +27,16 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
     def __init__(self):
         super().__init__()
         self.sessions = LinkAISessionManager(
-            LinkAISession, model=conf().get("model") or "gpt-3.5-turbo"
+            LinkAISession, model=conf().get("llm_model") or "gpt-3.5-turbo"
         )
         self.args = {}
 
     def get_api_config(self):
         """Get API configuration for OpenAI-compatible base class"""
         return {
-            "api_key": conf().get(
-                "open_ai_api_key"
-            ),  # LinkAI uses OpenAI-compatible key
-            "api_base": conf().get("open_ai_api_base", "https://api.link-ai.tech/v1"),
-            "model": conf().get("model", "gpt-3.5-turbo"),
+            "api_key": conf().get("llm_api_key"),
+            "api_base": conf().get("llm_api_base", "https://api.link-ai.tech/v1"),
+            "model": conf().get("llm_model", "gpt-3.5-turbo"),
             "default_temperature": conf().get("temperature", 0.9),
             "default_top_p": conf().get("top_p", 1.0),
             "default_frequency_penalty": conf().get("frequency_penalty", 0.0),
@@ -93,7 +91,7 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
                     or plugin_app_code
                     or conf().get("linkai_app_code")
                 )
-            linkai_api_key = conf().get("linkai_api_key")
+            linkai_api_key = conf().get("llm_api_key")
 
             session_id = context["session_id"]
             session_message = self.sessions.session_msg_query(query, session_id)
@@ -111,7 +109,7 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
                 if messages:
                     session_message = messages
 
-            model = conf().get("model")
+            model = conf().get("llm_model")
             # remove system message
             if session_message[0].get("role") == "system":
                 if app_code or model == "wenxin":
@@ -171,7 +169,7 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
             headers = {"Authorization": "Bearer " + linkai_api_key}
 
             # do http request
-            base_url = conf().get("linkai_api_base", "https://api.link-ai.tech")
+            base_url = conf().get("llm_api_base", "https://api.link-ai.tech")
             res = requests.post(
                 url=base_url + "/v1/chat/completions",
                 json=body,
@@ -322,7 +320,7 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
             body = {
                 "app_code": app_code,
                 "messages": session.messages,
-                "model": conf().get("model")
+                "model": conf().get("llm_model")
                 or "gpt-3.5-turbo",  # 对话模型的名称, 支持 gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-4, wenxin, xunfei
                 "temperature": conf().get("temperature"),
                 "top_p": conf().get("top_p", 1),
@@ -335,10 +333,10 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
             }
             if self.args.get("max_tokens"):
                 body["max_tokens"] = self.args.get("max_tokens")
-            headers = {"Authorization": "Bearer " + conf().get("linkai_api_key")}
+            headers = {"Authorization": "Bearer " + conf().get("llm_api_key")}
 
             # do http request
-            base_url = conf().get("linkai_api_base", "https://api.link-ai.tech")
+            base_url = conf().get("llm_api_base", "https://api.link-ai.tech")
             res = requests.post(
                 url=base_url + "/v1/chat/completions",
                 json=body,
@@ -387,9 +385,9 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
             return self.reply_text(session, app_code, retry_count + 1)
 
     def _fetch_app_info(self, app_code: str):
-        headers = {"Authorization": "Bearer " + conf().get("linkai_api_key")}
+        headers = {"Authorization": "Bearer " + conf().get("llm_api_key")}
         # do http request
-        base_url = conf().get("linkai_api_base", "https://api.link-ai.tech")
+        base_url = conf().get("llm_api_base", "https://api.link-ai.tech")
         params = {"app_code": app_code}
         res = requests.get(
             url=base_url + "/v1/app/info",
@@ -407,7 +405,7 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
             logger.info("[LinkImage] image_query={}".format(query))
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {conf().get('linkai_api_key')}",
+                "Authorization": f"Bearer {conf().get('llm_api_key')}",
             }
             data = {
                 "prompt": query,
@@ -417,7 +415,7 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
                 "img_proxy": conf().get("image_proxy"),
             }
             url = (
-                conf().get("linkai_api_base", "https://api.link-ai.tech")
+                conf().get("llm_api_base", "https://api.link-ai.tech")
                 + "/v1/images/generations"
             )
             res = requests.post(url, headers=headers, json=data, timeout=(5, 90))
@@ -659,7 +657,7 @@ def _linkai_call_with_tools(self, messages, tools=None, stream=False, **kwargs):
         session_id = kwargs.get("session_id", "")
         body = {
             "messages": messages,
-            "model": kwargs.get("model", conf().get("model") or "gpt-3.5-turbo"),
+            "model": kwargs.get("model", conf().get("llm_model") or "gpt-3.5-turbo"),
             "temperature": kwargs.get("temperature", conf().get("temperature", 0.9)),
             "top_p": kwargs.get("top_p", conf().get("top_p", 1)),
             "frequency_penalty": kwargs.get(
@@ -688,8 +686,8 @@ def _linkai_call_with_tools(self, messages, tools=None, stream=False, **kwargs):
             body["tool_choice"] = kwargs.get("tool_choice", "auto")
 
         # Prepare headers
-        headers = {"Authorization": "Bearer " + conf().get("linkai_api_key")}
-        base_url = conf().get("linkai_api_base", "https://api.link-ai.tech")
+        headers = {"Authorization": "Bearer " + conf().get("llm_api_key")}
+        base_url = conf().get("llm_api_base", "https://api.link-ai.tech")
 
         if stream:
             return self._handle_linkai_stream_response(base_url, headers, body)

@@ -348,7 +348,7 @@ class CloudClient(LinkAIClient):
     def _remove_weixin_credentials():
         """Remove the weixin token credentials file so next connect triggers QR login."""
         cred_path = os.path.expanduser(
-            conf().get("weixin_credentials_path", "~/.weixin_cow_credentials.json")
+            conf().get("weixin_credentials_path", "~/.cowagent/weixin_credentials.json")
         )
         try:
             if os.path.exists(cred_path):
@@ -846,7 +846,7 @@ def start(channel, channel_mgr=None):
 
     global chat_client
     chat_client = CloudClient(
-        api_key=conf().get("linkai_api_key"),
+        api_key=conf().get("llm_api_key"),
         host=conf().get("cloud_host", ""),
         port=conf().get("cloud_port"),
         channel=channel,

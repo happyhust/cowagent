@@ -11,7 +11,7 @@ from cowagent.config import conf
 # OPENAI提供的画图接口
 class OpenAIImage(object):
     def __init__(self):
-        openai.api_key = conf().get("open_ai_api_key")
+        openai.api_key = conf().get("llm_api_key")
         if conf().get("rate_limit_dalle"):
             self.tb4dalle = TokenBucket(conf().get("rate_limit_dalle", 50))
 

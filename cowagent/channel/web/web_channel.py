@@ -678,162 +678,89 @@ class ConfigHandler:
         const.DEEPSEEK_REASONER,
     ]
 
-    PROVIDER_MODELS = OrderedDict(
-        [
-            (
-                "minimax",
-                {
-                    "label": "MiniMax",
-                    "api_key_field": "minimax_api_key",
-                    "api_base_key": None,
-                    "api_base_default": None,
-                    "models": [
-                        const.MINIMAX_M2_7,
-                        const.MINIMAX_M2_5,
-                        const.MINIMAX_M2_1,
-                        const.MINIMAX_M2_1_LIGHTNING,
-                    ],
-                },
-            ),
-            (
-                "zhipu",
-                {
-                    "label": "智谱AI",
-                    "api_key_field": "zhipu_ai_api_key",
-                    "api_base_key": "zhipu_ai_api_base",
-                    "api_base_default": "https://open.bigmodel.cn/api/paas/v4",
-                    "models": [const.GLM_5_TURBO, const.GLM_5, const.GLM_4_7],
-                },
-            ),
-            (
-                "dashscope",
-                {
-                    "label": "通义千问",
-                    "api_key_field": "dashscope_api_key",
-                    "api_base_key": None,
-                    "api_base_default": None,
-                    "models": [const.QWEN36_PLUS, const.QWEN35_PLUS, const.QWEN3_MAX],
-                },
-            ),
-            (
-                "moonshot",
-                {
-                    "label": "Kimi",
-                    "api_key_field": "moonshot_api_key",
-                    "api_base_key": "moonshot_base_url",
-                    "api_base_default": "https://api.moonshot.cn/v1",
-                    "models": [const.KIMI_K2_5, const.KIMI_K2],
-                },
-            ),
-            (
-                "doubao",
-                {
-                    "label": "豆包",
-                    "api_key_field": "ark_api_key",
-                    "api_base_key": "ark_base_url",
-                    "api_base_default": "https://ark.cn-beijing.volces.com/api/v3",
-                    "models": [const.DOUBAO_SEED_2_PRO, const.DOUBAO_SEED_2_CODE],
-                },
-            ),
-            (
-                "claudeAPI",
-                {
-                    "label": "Claude",
-                    "api_key_field": "claude_api_key",
-                    "api_base_key": "claude_api_base",
-                    "api_base_default": "https://api.anthropic.com/v1",
-                    "models": [
-                        const.CLAUDE_4_6_SONNET,
-                        const.CLAUDE_4_6_OPUS,
-                        const.CLAUDE_4_5_SONNET,
-                    ],
-                },
-            ),
-            (
-                "gemini",
-                {
-                    "label": "Gemini",
-                    "api_key_field": "gemini_api_key",
-                    "api_base_key": "gemini_api_base",
-                    "api_base_default": "https://generativelanguage.googleapis.com",
-                    "models": [
-                        const.GEMINI_31_FLASH_LITE_PRE,
-                        const.GEMINI_31_PRO_PRE,
-                        const.GEMINI_3_FLASH_PRE,
-                    ],
-                },
-            ),
-            (
-                "openai",
-                {
-                    "label": "OpenAI",
-                    "api_key_field": "open_ai_api_key",
-                    "api_base_key": "open_ai_api_base",
-                    "api_base_default": "https://api.openai.com/v1",
-                    "models": [
-                        const.GPT_54,
-                        const.GPT_54_MINI,
-                        const.GPT_54_NANO,
-                        const.GPT_5,
-                        const.GPT_41,
-                        const.GPT_4o,
-                    ],
-                },
-            ),
-            (
-                "deepseek",
-                {
-                    "label": "DeepSeek",
-                    "api_key_field": "deepseek_api_key",
-                    "api_base_key": "deepseek_api_base",
-                    "api_base_default": "https://api.deepseek.com/v1",
-                    "models": [const.DEEPSEEK_CHAT, const.DEEPSEEK_REASONER],
-                },
-            ),
-            (
-                "modelscope",
-                {
-                    "label": "ModelScope",
-                    "api_key_field": "modelscope_api_key",
-                    "api_base_key": None,
-                    "api_base_default": None,
-                    "models": [const.QWEN3_5_27B, const.QWEN3_235B_A22B_INSTRUCT_2507],
-                },
-            ),
-            (
-                "linkai",
-                {
-                    "label": "LinkAI",
-                    "api_key_field": "linkai_api_key",
-                    "api_base_key": None,
-                    "api_base_default": None,
-                    "models": _RECOMMENDED_MODELS,
-                },
-            ),
-        ]
-    )
+    # Provider → model list mapping for frontend dropdown
+    LLM_PROVIDERS = {
+        "openai": {
+            "label": "OpenAI",
+            "models": [
+                const.GPT_54,
+                const.GPT_54_MINI,
+                const.GPT_54_NANO,
+                const.GPT_5,
+                const.GPT_41,
+                const.GPT_4o,
+            ],
+        },
+        "claude": {
+            "label": "Claude",
+            "models": [
+                const.CLAUDE_4_6_SONNET,
+                const.CLAUDE_4_6_OPUS,
+                const.CLAUDE_4_5_SONNET,
+            ],
+        },
+        "gemini": {
+            "label": "Gemini",
+            "models": [
+                const.GEMINI_31_FLASH_LITE_PRE,
+                const.GEMINI_31_PRO_PRE,
+                const.GEMINI_3_FLASH_PRE,
+            ],
+        },
+        "qwen": {
+            "label": "通义千问",
+            "models": [const.QWEN36_PLUS, const.QWEN35_PLUS, const.QWEN3_MAX],
+        },
+        "zhipu": {
+            "label": "智谱AI",
+            "models": [const.GLM_5_TURBO, const.GLM_5, const.GLM_4_7],
+        },
+        "moonshot": {
+            "label": "Kimi",
+            "models": [const.KIMI_K2_5, const.KIMI_K2],
+        },
+        "doubao": {
+            "label": "豆包",
+            "models": [const.DOUBAO_SEED_2_PRO, const.DOUBAO_SEED_2_CODE],
+        },
+        "deepseek": {
+            "label": "DeepSeek",
+            "models": [const.DEEPSEEK_CHAT, const.DEEPSEEK_REASONER],
+        },
+        "minimax": {
+            "label": "MiniMax",
+            "models": [
+                const.MINIMAX_M2_7,
+                const.MINIMAX_M2_5,
+                const.MINIMAX_M2_1,
+                const.MINIMAX_M2_1_LIGHTNING,
+            ],
+        },
+        "modelscope": {
+            "label": "ModelScope",
+            "models": [const.QWEN3_5_27B, const.QWEN3_235B_A22B_INSTRUCT_2507],
+        },
+        "baidu": {
+            "label": "百度文心",
+            "models": [const.WEN_XIN, const.WEN_XIN_4],
+        },
+        "linkai": {
+            "label": "LinkAI",
+            "models": _RECOMMENDED_MODELS,
+        },
+        "xunfei": {
+            "label": "讯飞",
+            "models": [],
+        },
+    }
 
     EDITABLE_KEYS = {
-        "model",
+        "llm_provider",
+        "llm_model",
+        "llm_api_base",
+        "llm_api_key",
         "bot_type",
         "use_linkai",
-        "open_ai_api_base",
-        "deepseek_api_base",
-        "claude_api_base",
-        "gemini_api_base",
-        "zhipu_ai_api_base",
-        "moonshot_base_url",
-        "ark_base_url",
-        "open_ai_api_key",
-        "deepseek_api_key",
-        "claude_api_key",
-        "gemini_api_key",
-        "zhipu_ai_api_key",
-        "dashscope_api_key",
-        "moonshot_api_key",
-        "ark_api_key",
-        "minimax_api_key",
-        "linkai_api_key",
         "agent_max_context_tokens",
         "agent_max_context_turns",
         "agent_max_steps",
@@ -854,27 +781,16 @@ class ConfigHandler:
             use_agent = local_config.get("agent", False)
             title = "CowAgent" if use_agent else "AI Assistant"
 
-            api_bases = {}
-            api_keys_masked = {}
-            for pid, pinfo in self.PROVIDER_MODELS.items():
-                base_key = pinfo.get("api_base_key")
-                if base_key:
-                    api_bases[base_key] = local_config.get(
-                        base_key, pinfo["api_base_default"]
-                    )
-                key_field = pinfo.get("api_key_field")
-                if key_field and key_field not in api_keys_masked:
-                    raw = local_config.get(key_field, "")
-                    api_keys_masked[key_field] = self._mask_key(raw) if raw else ""
+            llm_provider = local_config.get("llm_provider", "openai")
+            llm_model = local_config.get("llm_model", "")
+            llm_api_base = local_config.get("llm_api_base", "")
+            llm_api_key_raw = local_config.get("llm_api_key", "")
 
             providers = {}
-            for pid, p in self.PROVIDER_MODELS.items():
+            for pid, p in self.LLM_PROVIDERS.items():
                 providers[pid] = {
                     "label": p["label"],
                     "models": p["models"],
-                    "api_base_key": p["api_base_key"],
-                    "api_base_default": p["api_base_default"],
-                    "api_key_field": p.get("api_key_field"),
                 }
 
             return json.dumps(
@@ -882,7 +798,10 @@ class ConfigHandler:
                     "status": "success",
                     "use_agent": use_agent,
                     "title": title,
-                    "model": local_config.get("model", ""),
+                    "llm_provider": llm_provider,
+                    "llm_model": llm_model,
+                    "llm_api_base": llm_api_base,
+                    "llm_api_key": self._mask_key(llm_api_key_raw) if llm_api_key_raw else "",
                     "bot_type": "openai"
                     if local_config.get("bot_type") == "chatGPT"
                     else local_config.get("bot_type", ""),
@@ -895,8 +814,6 @@ class ConfigHandler:
                         "agent_max_context_turns", 20
                     ),
                     "agent_max_steps": local_config.get("agent_max_steps", 15),
-                    "api_bases": api_bases,
-                    "api_keys": api_keys_masked,
                     "providers": providers,
                 },
                 ensure_ascii=False,
@@ -1600,7 +1517,7 @@ class WeixinQrHandler:
                 )
 
             cred_path = os.path.expanduser(
-                conf().get("weixin_credentials_path", "~/.weixin_cow_credentials.json")
+                conf().get("weixin_credentials_path", "~/.cowagent/weixin_credentials.json")
             )
             from cowagent.channel.weixin.weixin_channel import _save_credentials
 

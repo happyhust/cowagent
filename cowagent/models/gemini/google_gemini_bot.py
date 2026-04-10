@@ -27,23 +27,23 @@ class GoogleGeminiBot(Bot):
     def __init__(self):
         super().__init__()
         self.sessions = SessionManager(
-            ChatGPTSession, model=conf().get("model") or "gpt-3.5-turbo"
+            ChatGPTSession, model=conf().get("llm_model") or "gpt-3.5-turbo"
         )
 
     @property
     def api_key(self):
-        return conf().get("gemini_api_key")
+        return conf().get("llm_api_key")
 
     @property
     def model(self):
-        model_name = conf().get("model") or "gemini-3.1-pro-preview"
+        model_name = conf().get("llm_model") or "gemini-3.1-pro-preview"
         if model_name == "gemini":
             model_name = "gemini-3.1-pro-preview"
         return model_name
 
     @property
     def api_base(self):
-        base = conf().get("gemini_api_base", "").strip()
+        base = conf().get("llm_api_base", "").strip()
         if base:
             return base.rstrip("/")
         return "https://generativelanguage.googleapis.com"

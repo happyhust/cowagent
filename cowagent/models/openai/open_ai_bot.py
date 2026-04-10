@@ -26,18 +26,18 @@ user_session = dict()
 class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
     def __init__(self):
         super().__init__()
-        openai.api_key = conf().get("open_ai_api_key")
-        if conf().get("open_ai_api_base"):
-            openai.api_base = conf().get("open_ai_api_base")
+        openai.api_key = conf().get("llm_api_key")
+        if conf().get("llm_api_base"):
+            openai.api_base = conf().get("llm_api_base")
         proxy = conf().get("proxy")
         if proxy:
             openai.proxy = proxy
 
         self.sessions = SessionManager(
-            OpenAISession, model=conf().get("model") or "text-davinci-003"
+            OpenAISession, model=conf().get("llm_model") or "text-davinci-003"
         )
         self.args = {
-            "model": conf().get("model") or "text-davinci-003",  # 对话模型的名称
+            "model": conf().get("llm_model") or "text-davinci-003",  # 对话模型的名称
             "temperature": conf().get(
                 "temperature", 0.9
             ),  # 值在[0,1]之间，越大表示回复越具有不确定性
@@ -61,9 +61,9 @@ class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
     def get_api_config(self):
         """Get API configuration for OpenAI-compatible base class"""
         return {
-            "api_key": conf().get("open_ai_api_key"),
-            "api_base": conf().get("open_ai_api_base"),
-            "model": conf().get("model", "text-davinci-003"),
+            "api_key": conf().get("llm_api_key"),
+            "api_base": conf().get("llm_api_base"),
+            "model": conf().get("llm_model", "text-davinci-003"),
             "default_temperature": conf().get("temperature", 0.9),
             "default_top_p": conf().get("top_p", 1.0),
             "default_frequency_penalty": conf().get("frequency_penalty", 0.0),
@@ -180,7 +180,7 @@ class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
 
             # Build request parameters for ChatCompletion
             request_params = {
-                "model": kwargs.get("model", conf().get("model") or "gpt-4.1"),
+                "model": kwargs.get("model", conf().get("llm_model") or "gpt-4.1"),
                 "messages": messages,
                 "temperature": kwargs.get(
                     "temperature", conf().get("temperature", 0.9)

@@ -35,9 +35,9 @@ class Util:
     @staticmethod
     def fetch_app_plugin(app_code: str, plugin_name: str) -> bool:
         try:
-            headers = {"Authorization": "Bearer " + conf().get("linkai_api_key")}
+            headers = {"Authorization": "Bearer " + conf().get("llm_api_key")}
             # do http request
-            base_url = conf().get("linkai_api_base", "https://api.link-ai.tech")
+            base_url = conf().get("llm_api_base", "https://api.link-ai.tech")
             params = {"app_code": app_code}
             res = requests.get(
                 url=base_url + "/v1/app/info",

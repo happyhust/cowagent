@@ -32,16 +32,16 @@ class ClaudeAPIBot(Bot, OpenAIImage):
     def __init__(self):
         super().__init__()
         self.sessions = SessionManager(
-            BaiduWenxinSession, model=conf().get("model") or "text-davinci-003"
+            BaiduWenxinSession, model=conf().get("llm_model") or "text-davinci-003"
         )
 
     @property
     def api_key(self):
-        return conf().get("claude_api_key")
+        return conf().get("llm_api_key")
 
     @property
     def api_base(self):
-        return conf().get("claude_api_base") or "https://api.anthropic.com/v1"
+        return conf().get("llm_api_base") or "https://api.anthropic.com/v1"
 
     @property
     def proxy(self):
@@ -94,7 +94,7 @@ class ClaudeAPIBot(Bot, OpenAIImage):
 
     def reply_text(self, session: BaiduWenxinSession, retry_count=0, tools=None):
         try:
-            actual_model = self._model_mapping(conf().get("model"))
+            actual_model = self._model_mapping(conf().get("llm_model"))
 
             # Prepare headers
             headers = {
@@ -251,7 +251,7 @@ class ClaudeAPIBot(Bot, OpenAIImage):
         Returns:
             Formatted response compatible with OpenAI format or generator for streaming
         """
-        actual_model = self._model_mapping(conf().get("model"))
+        actual_model = self._model_mapping(conf().get("llm_model"))
 
         # Extract system prompt from messages if present
         system_prompt = kwargs.get("system", conf().get("character_desc", ""))

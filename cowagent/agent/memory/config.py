@@ -13,8 +13,9 @@ from pathlib import Path
 def _default_workspace():
     """Get default workspace path with proper Windows support"""
     from cowagent.common.utils import expand_path
+    from cowagent.config import conf
 
-    return expand_path("~/.cowagent")
+    return expand_path(conf().get("agent_workspace", "~/.cowagent"))
 
 
 @dataclass

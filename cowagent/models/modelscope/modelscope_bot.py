@@ -16,7 +16,7 @@ from .modelscope_session import ModelScopeSession
 class ModelScopeBot(Bot):
     def __init__(self):
         super().__init__()
-        model = conf().get("model") or "Qwen/Qwen3.5-27B"
+        model = conf().get("llm_model") or "Qwen/Qwen3.5-27B"
         if model == "modelscope":
             model = "Qwen/Qwen3.5-27B"
         self.sessions = SessionManager(ModelScopeSession, model=model)
@@ -25,9 +25,9 @@ class ModelScopeBot(Bot):
             "temperature": conf().get("temperature", 0.3),
             "top_p": conf().get("top_p", 1.0),
         }
-        self.api_key = conf().get("modelscope_api_key")
+        self.api_key = conf().get("llm_api_key")
         self.base_url = conf().get(
-            "modelscope_base_url", "https://api-inference.modelscope.cn/v1"
+            "llm_api_base", "https://api-inference.modelscope.cn/v1"
         )
         if self.base_url.endswith("/chat/completions"):
             self.base_url = self.base_url.rsplit("/chat/completions", 1)[0]

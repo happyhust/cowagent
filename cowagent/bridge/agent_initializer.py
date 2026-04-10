@@ -53,7 +53,7 @@ class AgentInitializer:
         self._migrate_config_to_env(workspace_root)
 
         # Load environment variables
-        self._load_env_file()
+        self._load_env_file(workspace_root)
 
         # Initialize workspace
         from cowagent.agent.prompt import (
@@ -252,9 +252,9 @@ class AgentInitializer:
 
         return filtered
 
-    def _load_env_file(self):
+    def _load_env_file(self, workspace_root: str):
         """Load environment variables from .env file"""
-        env_file = expand_path("~/.cow/.env")
+        env_file = os.path.join(workspace_root, ".env")
         if os.path.exists(env_file):
             try:
                 from dotenv import load_dotenv
@@ -289,8 +289,8 @@ class AgentInitializer:
             # Initialize embedding provider (prefer OpenAI, fallback to LinkAI)
             embedding_provider = None
 
-            openai_api_key = conf().get("open_ai_api_key", "")
-            openai_api_base = conf().get("open_ai_api_base", "")
+            openai_api_key = conf().get("llm_api_key", "")
+            openai_api_base = conf().get("llm_api_base", "")
             if openai_api_key and openai_api_key not in [
                 "",
                 "YOUR API KEY",
@@ -309,11 +309,11 @@ class AgentInitializer:
                     logger.warning(f"[AgentInitializer] OpenAI embedding failed: {e}")
 
             if embedding_provider is None:
-                linkai_api_key = conf().get("linkai_api_key", "") or os.environ.get(
+                linkai_api_key = conf().get("llm_api_key", "") or os.environ.get(
                     "LINKAI_API_KEY", ""
                 )
                 linkai_api_base = conf().get(
-                    "linkai_api_base", "https://api.link-ai.tech"
+                    "llm_api_base", "https://api.link-ai.tech"
                 )
                 if linkai_api_key and linkai_api_key not in [
                     "",
@@ -555,7 +555,7 @@ class AgentInitializer:
 
         def get_model():
             """Get current model name dynamically from config"""
-            return conf().get("model", "unknown")
+            return conf().get("llm_model", "unknown")
 
         return {
             "_get_model": get_model,
@@ -571,14 +571,11 @@ class AgentInitializer:
         from cowagent.config import conf
 
         key_mapping = {
-            "open_ai_api_key": "OPENAI_API_KEY",
-            "open_ai_api_base": "OPENAI_API_BASE",
-            "gemini_api_key": "GEMINI_API_KEY",
-            "claude_api_key": "CLAUDE_API_KEY",
-            "linkai_api_key": "LINKAI_API_KEY",
+            "llm_api_key": "OPENAI_API_KEY",
+            "llm_api_base": "OPENAI_API_BASE",
         }
 
-        env_file = expand_path("~/.cow/.env")
+        env_file = os.path.join(workspace_root, ".env")
 
         # Read existing env vars
         existing_env_vars = {}

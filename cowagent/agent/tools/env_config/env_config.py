@@ -10,6 +10,7 @@ from pathlib import Path
 from cowagent.agent.tools.base_tool import BaseTool, ToolResult
 from cowagent.common.log import logger
 from cowagent.common.utils import expand_path
+from cowagent.config import conf
 
 
 # API Key 知识库：常见的环境变量及其描述
@@ -67,8 +68,8 @@ class EnvConfig(BaseTool):
 
     def __init__(self, config: dict = None):
         self.config = config or {}
-        # Store env config in ~/.cow directory (outside workspace for security)
-        self.env_dir = expand_path("~/.cow")
+        # Store env config in workspace directory
+        self.env_dir = expand_path(conf().get("agent_workspace", "~/.cowagent"))
         self.env_path = os.path.join(self.env_dir, ".env")
         self.agent_bridge = self.config.get(
             "agent_bridge"
@@ -78,7 +79,7 @@ class EnvConfig(BaseTool):
 
     def _ensure_env_file(self):
         """Ensure the .env file exists"""
-        # Create ~/.cow directory if it doesn't exist
+        # Create ~/.cowagent directory if it doesn't exist
         os.makedirs(self.env_dir, exist_ok=True)
 
         if not os.path.exists(self.env_path):

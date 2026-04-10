@@ -18,6 +18,7 @@ from cowagent.agent.tools.utils.truncate import (
 )
 from cowagent.common.log import logger
 from cowagent.common.utils import expand_path
+from cowagent.config import conf
 
 
 class Bash(BaseTool):
@@ -80,7 +81,8 @@ SAFETY:
             return ToolResult.fail("Error: command parameter is required")
 
         # Security check: Prevent accessing sensitive config files
-        if "~/.cow/.env" in command or "~/.cow" in command:
+        workspace = expand_path(conf().get("agent_workspace", "~/.cowagent"))
+        if workspace in command:
             return ToolResult.fail(
                 "Error: Access denied. API keys and credentials must be accessed through the env_config tool only."
             )
@@ -97,8 +99,9 @@ SAFETY:
             # Prepare environment with .env file variables
             env = os.environ.copy()
 
-            # Load environment variables from ~/.cow/.env if it exists
-            env_file = expand_path("~/.cow/.env")
+            # Load environment variables from workspace .env file if it exists
+            workspace = expand_path(conf().get("agent_workspace", "~/.cowagent"))
+            env_file = os.path.join(workspace, ".env")
             dotenv_vars = {}
             if os.path.exists(env_file):
                 try:

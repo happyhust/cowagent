@@ -90,7 +90,7 @@ class WeixinChannel(ChatChannel):
         token = conf().get("weixin_token", "")
 
         self._credentials_path = os.path.expanduser(
-            conf().get("weixin_credentials_path", "~/.weixin_cow_credentials.json")
+            conf().get("weixin_credentials_path", "~/.cowagent/weixin_credentials.json")
         )
 
         if not token:

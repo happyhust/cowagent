@@ -9,7 +9,8 @@ import sys
 from cowagent.common.log import logger
 from cowagent.common.singleton import singleton
 from cowagent.common.sorted_dict import SortedDict
-from cowagent.config import remove_plugin_config, write_plugin_config
+from cowagent.common.utils import expand_path
+from cowagent.config import conf, remove_plugin_config, write_plugin_config
 
 from .event import *
 
@@ -23,6 +24,13 @@ class PluginManager:
         self.pconf = {}
         self.current_plugin_path = None
         self.loaded = {}
+
+    def _plugins_dir(self) -> str:
+        """Get the plugins directory path under agent workspace."""
+        workspace = expand_path(conf().get("agent_workspace", "~/.cowagent"))
+        plugins_dir = os.path.join(workspace, "plugins")
+        os.makedirs(plugins_dir, exist_ok=True)
+        return plugins_dir
 
     def register(self, name: str, desire_priority: int = 0, **kwargs):
         def wrapper(plugincls):
@@ -52,15 +60,18 @@ class PluginManager:
         return wrapper
 
     def save_config(self):
-        with open("./plugins/plugins.json", "w", encoding="utf-8") as f:
+        plugins_dir = self._plugins_dir()
+        with open(os.path.join(plugins_dir, "plugins.json"), "w", encoding="utf-8") as f:
             json.dump(self.pconf, f, indent=4, ensure_ascii=False)
 
     def load_config(self):
         logger.debug("Loading plugins config...")
 
         modified = False
-        if os.path.exists("./plugins/plugins.json"):
-            with open("./plugins/plugins.json", "r", encoding="utf-8") as f:
+        plugins_dir = self._plugins_dir()
+        plugins_json = os.path.join(plugins_dir, "plugins.json")
+        if os.path.exists(plugins_json):
+            with open(plugins_json, "r", encoding="utf-8") as f:
                 pconf = json.load(f)
                 pconf["plugins"] = SortedDict(
                     lambda k, v: v["priority"], pconf["plugins"], reverse=True
@@ -73,8 +84,7 @@ class PluginManager:
             self.save_config()
         return pconf
 
-    @staticmethod
-    def _load_all_config():
+    def _load_all_config(self):
         """
         背景: 目前插件配置存放于每个插件目录的config.json下，docker运行时不方便进行映射，故增加统一管理的入口，优先
         加载 plugins/config.json，原插件目录下的config.json 不受影响
@@ -82,7 +92,7 @@ class PluginManager:
         从 plugins/config.json 中加载所有插件的配置并写入 config.py 的全局配置中，供插件中使用
         插件实例中通过 config.pconf(plugin_name) 即可获取该插件的配置
         """
-        all_config_path = "./plugins/config.json"
+        all_config_path = os.path.join(self._plugins_dir(), "config.json")
         try:
             if os.path.exists(all_config_path):
                 # read from all plugins config
@@ -99,16 +109,55 @@ class PluginManager:
 
     def scan_plugins(self):
         logger.debug("Scanning plugins ...")
-        plugins_dir = "./plugins"
         raws = [self.plugins[name] for name in self.plugins]
+
+        # 1. Scan builtin plugins from cowagent package
+        import cowagent.plugins as builtin_plugins_pkg
+        builtin_plugins_dir = os.path.dirname(builtin_plugins_pkg.__file__)
+        self._scan_plugin_directory(builtin_plugins_dir, "cowagent.plugins")
+
+        # 2. Scan user-installed plugins from workspace
+        workspace_plugins_dir = self._plugins_dir()
+        if os.path.isdir(workspace_plugins_dir) and workspace_plugins_dir != builtin_plugins_dir:
+            # Add workspace plugins dir to sys.path for import
+            if workspace_plugins_dir not in sys.path:
+                sys.path.insert(0, workspace_plugins_dir)
+            self._scan_plugin_directory(workspace_plugins_dir, None)
+
+        pconf = self.pconf
+        news = [self.plugins[name] for name in self.plugins]
+        new_plugins = list(set(news) - set(raws))
+        modified = False
+        for name, plugincls in self.plugins.items():
+            rawname = plugincls.name
+            if rawname not in pconf["plugins"]:
+                modified = True
+                logger.info(
+                    "Plugin %s not found in pconfig, adding to pconfig..." % name
+                )
+                pconf["plugins"][rawname] = {
+                    "enabled": plugincls.enabled,
+                    "priority": plugincls.priority,
+                }
+            else:
+                self.plugins[name].enabled = pconf["plugins"][rawname]["enabled"]
+                self.plugins[name].priority = pconf["plugins"][rawname]["priority"]
+                self.plugins._update_heap(name)  # 更新下plugins中的顺序
+        if modified:
+            self.save_config()
+        return new_plugins
+
+    def _scan_plugin_directory(self, plugins_dir: str, package_prefix: str):
+        """Scan a directory for plugins and import them."""
         for plugin_name in os.listdir(plugins_dir):
             plugin_path = os.path.join(plugins_dir, plugin_name)
             if os.path.isdir(plugin_path):
-                # 判断插件是否包含同名__init__.py文件
                 main_module_path = os.path.join(plugin_path, "__init__.py")
                 if os.path.isfile(main_module_path):
-                    # 导入插件
-                    import_path = "plugins.{}".format(plugin_name)
+                    if package_prefix:
+                        import_path = "{}.{}".format(package_prefix, plugin_name)
+                    else:
+                        import_path = plugin_name
                     try:
                         self.current_plugin_path = plugin_path
                         if plugin_path in self.loaded:
@@ -133,28 +182,6 @@ class PluginManager:
                     except Exception as e:
                         logger.warn("Failed to import plugin %s: %s" % (plugin_name, e))
                         continue
-        pconf = self.pconf
-        news = [self.plugins[name] for name in self.plugins]
-        new_plugins = list(set(news) - set(raws))
-        modified = False
-        for name, plugincls in self.plugins.items():
-            rawname = plugincls.name
-            if rawname not in pconf["plugins"]:
-                modified = True
-                logger.info(
-                    "Plugin %s not found in pconfig, adding to pconfig..." % name
-                )
-                pconf["plugins"][rawname] = {
-                    "enabled": plugincls.enabled,
-                    "priority": plugincls.priority,
-                }
-            else:
-                self.plugins[name].enabled = pconf["plugins"][rawname]["enabled"]
-                self.plugins[name].priority = pconf["plugins"][rawname]["priority"]
-                self.plugins._update_heap(name)  # 更新下plugins中的顺序
-        if modified:
-            self.save_config()
-        return new_plugins
 
     def refresh_order(self):
         for event in self.listening_plugins.keys():
@@ -294,7 +321,8 @@ class PluginManager:
 
         if not match:
             try:
-                with open("./plugins/source.json", "r", encoding="utf-8") as f:
+                source_path = os.path.join(self._plugins_dir(), "source.json")
+                with open(source_path, "r", encoding="utf-8") as f:
                     source = json.load(f)
                 if repo in source["repo"]:
                     repo = source["repo"][repo]["url"]
@@ -308,7 +336,7 @@ class PluginManager:
             except Exception as e:
                 logger.error("Failed to install plugin, {}".format(e))
                 return False, "安装插件失败，请检查仓库地址是否正确"
-        dirname = os.path.join("./plugins", match.group(4))
+        dirname = os.path.join(self._plugins_dir(), match.group(4))
         try:
             repo = porcelain.clone(repo, dirname, checkout=True)
             if os.path.exists(os.path.join(dirname, "requirements.txt")):

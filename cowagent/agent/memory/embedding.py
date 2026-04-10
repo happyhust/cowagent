@@ -56,7 +56,7 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
         # Validate API key
         if not self.api_key or self.api_key in ["", "YOUR API KEY", "YOUR_API_KEY"]:
             raise ValueError(
-                "OpenAI API key is not configured. Please set 'open_ai_api_key' in config.json"
+                "OpenAI API key is not configured. Please set 'llm_api_key' in config.json"
             )
 
         # Set dimensions based on model
@@ -89,7 +89,7 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
                 raise ValueError(
-                    "Invalid OpenAI API key. Please check your 'open_ai_api_key' in config.json"
+                    "Invalid OpenAI API key. Please check your 'llm_api_key' in config.json"
                 )
             elif e.response.status_code == 429:
                 raise ValueError(

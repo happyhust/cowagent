@@ -1,4 +1,4 @@
-.PHONY: start stop restart status clean init install format lint test help
+.PHONY: start stop restart status clean init install format lint test help start-ui stop-ui
 
 BASE_DIR := $(shell pwd)
 
@@ -14,6 +14,14 @@ restart: stop start
 
 status:
 	@$(BASE_DIR)/scripts/status.sh
+
+# Start Web UI (frontend only, requires backend running)
+start-ui:
+	@$(BASE_DIR)/scripts/start-ui.sh
+
+# Stop Web UI
+stop-ui:
+	@$(BASE_DIR)/scripts/stop-ui.sh
 
 # Install and configure (interactive wizard)
 install:
@@ -68,10 +76,12 @@ help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  start      Start the service"
+	@echo "  start      Start the backend service"
 	@echo "  stop       Stop the service"
 	@echo "  restart    Restart the service"
 	@echo "  status     Check service status"
+	@echo "  start-ui   Start Web UI (frontend, requires backend)"
+	@echo "  stop-ui    Stop Web UI"
 	@echo "  clean      Remove logs and __pycache__"
 	@echo "  init       Install dependencies (non-interactive)"
 	@echo "  install    Interactive setup wizard (model, channel, config)"

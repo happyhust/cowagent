@@ -616,8 +616,9 @@ def get_conversation_store() -> ConversationStore:
             db_path = get_default_memory_config().get_db_path()
         except Exception:
             from cowagent.common.utils import expand_path
+            from cowagent.config import conf
 
-            db_path = Path(expand_path("~/.cowagent")) / "memory" / "long-term" / "index.db"
+            db_path = Path(expand_path(conf().get("agent_workspace", "~/.cowagent"))) / "memory" / "long-term" / "index.db"
 
         _store_instance = ConversationStore(db_path)
         logger.debug(f"[ConversationStore] Using shared DB at: {db_path}")

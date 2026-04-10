@@ -25,9 +25,9 @@ class DeepSeekBot(Bot, OpenAICompatibleBot):
         super().__init__()
         self.sessions = SessionManager(
             DeepSeekSession,
-            model=conf().get("model") or const.DEEPSEEK_CHAT,
+            model=conf().get("llm_model") or const.DEEPSEEK_CHAT,
         )
-        conf_model = conf().get("model") or const.DEEPSEEK_CHAT
+        conf_model = conf().get("llm_model") or const.DEEPSEEK_CHAT
         self.args = {
             "model": conf_model,
             "temperature": conf().get("temperature", 0.7),
@@ -40,15 +40,11 @@ class DeepSeekBot(Bot, OpenAICompatibleBot):
 
     @property
     def api_key(self):
-        return conf().get("deepseek_api_key") or conf().get("open_ai_api_key")
+        return conf().get("llm_api_key")
 
     @property
     def api_base(self):
-        url = (
-            conf().get("deepseek_api_base")
-            or conf().get("open_ai_api_base")
-            or DEFAULT_API_BASE
-        )
+        url = conf().get("llm_api_base") or DEFAULT_API_BASE
         return url.rstrip("/")
 
     def get_api_config(self):
@@ -56,7 +52,7 @@ class DeepSeekBot(Bot, OpenAICompatibleBot):
         return {
             "api_key": self.api_key,
             "api_base": self.api_base,
-            "model": conf().get("model", const.DEEPSEEK_CHAT),
+            "model": conf().get("llm_model", const.DEEPSEEK_CHAT),
             "default_temperature": conf().get("temperature", 0.7),
             "default_top_p": conf().get("top_p", 1.0),
             "default_frequency_penalty": conf().get("frequency_penalty", 0.0),

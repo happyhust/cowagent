@@ -6,24 +6,46 @@ import logging
 import os
 import pickle
 
+from cowagent.common import const
 from cowagent.common.log import logger
+
+# Unified LLM provider → bot_type mapping
+LLM_PROVIDER_TO_BOT_TYPE = {
+    "openai": const.CHATGPT,
+    "claude": const.CLAUDEAPI,
+    "gemini": const.GEMINI,
+    "qwen": const.QWEN_DASHSCOPE,
+    "zhipu": const.ZHIPU_AI,
+    "moonshot": const.MOONSHOT,
+    "doubao": const.DOUBAO,
+    "deepseek": const.DEEPSEEK,
+    "minimax": const.MiniMax,
+    "modelscope": const.MODELSCOPE,
+    "linkai": const.LINKAI,
+    "baidu": const.BAIDU,
+    "xunfei": const.XUNFEI,
+}
 
 # 将所有可用的配置项写在字典里, 请使用小写字母
 # 此处的配置值无实际意义，程序不会读取此处的配置，仅用于提示格式，请将配置加入到config.json中
 available_setting = {
-    # openai api配置
-    "open_ai_api_key": "",  # openai api key
-    # openai apibase，当use_azure_chatgpt为true时，需要设置对应的api base
-    "open_ai_api_base": "https://api.openai.com/v1",
-    "claude_api_base": "https://api.anthropic.com/v1",  # claude api base
-    "gemini_api_base": "https://generativelanguage.googleapis.com",  # gemini api base
-    "proxy": "",  # openai使用的代理
-    # chatgpt模型， 当use_azure_chatgpt为true时，其名称为Azure上model deployment名称
-    "model": "gpt-3.5-turbo",  # 可选择: gpt-4o, pt-4o-mini, gpt-4-turbo, claude-3-sonnet, wenxin, moonshot, qwen-turbo, xunfei, glm-4, minimax, gemini等模型，全部可选模型详见common/const.py文件
-    "bot_type": "",  # 可选配置，使用兼容openai格式的三方服务时候，需填"openai"（历史值"chatGPT"仍兼容）。bot具体名称详见common/const.py文件，如不填根据model名称判断
-    "use_azure_chatgpt": False,  # 是否使用azure的chatgpt
-    "azure_deployment_id": "",  # azure 模型部署名称
-    "azure_api_version": "",  # azure api版本
+    # LLM unified config
+    "llm_provider": "openai",  # LLM provider: openai, claude, gemini, qwen, zhipu, moonshot, doubao, deepseek, minimax, modelscope, linkai, baidu, xunfei
+    "llm_model": "gpt-5.4",  # LLM model name
+    "llm_api_key": "",  # LLM API key
+    "llm_api_base": "",  # LLM API base URL (leave empty for provider default)
+    # proxy
+    "proxy": "",  # proxy for API requests
+    # Bot type override (optional, auto-derived from llm_provider if not set)
+    "bot_type": "",
+    # Azure config (for use_azure_chatgpt bot_type)
+    "use_azure_chatgpt": False,
+    "azure_deployment_id": "",
+    "azure_api_version": "",
+    # Azure DALL-E image gen (separate key/endpoint)
+    "azure_openai_dalle_api_base": "",
+    "azure_openai_dalle_api_key": "",
+    "azure_openai_dalle_deployment_id": "",
     # Bot触发配置
     "single_chat_prefix": ["bot", "@bot"],  # 私聊时文本需要包含该前缀才能触发机器人回复
     "single_chat_reply_prefix": "[bot] ",  # 私聊时自动回复的前缀，用于区分真人
@@ -72,32 +94,6 @@ available_setting = {
     "presence_penalty": 0,
     "request_timeout": 180,  # chatgpt请求超时时间，openai接口默认设置为600，对于难问题一般需要较长时间
     "timeout": 120,  # chatgpt重试超时时间，在这个时间内，将会自动重试
-    # Baidu 文心一言参数
-    "baidu_wenxin_model": "eb-instant",  # 默认使用ERNIE-Bot-turbo模型
-    "baidu_wenxin_api_key": "",  # Baidu api key
-    "baidu_wenxin_secret_key": "",  # Baidu secret key
-    "baidu_wenxin_prompt_enabled": False,  # Enable prompt if you are using ernie character model
-    # 讯飞星火API
-    "xunfei_app_id": "",  # 讯飞应用ID
-    "xunfei_api_key": "",  # 讯飞 API key
-    "xunfei_api_secret": "",  # 讯飞 API secret
-    "xunfei_domain": "",  # 讯飞模型对应的domain参数，Spark4.0 Ultra为 4.0Ultra，其他模型详见: https://www.xfyun.cn/doc/spark/Web.html
-    "xunfei_spark_url": "",  # 讯飞模型对应的请求地址，Spark4.0 Ultra为 wss://spark-api.xf-yun.com/v4.0/chat，其他模型参考详见: https://www.xfyun.cn/doc/spark/Web.html
-    # claude 配置
-    "claude_api_cookie": "",
-    "claude_uuid": "",
-    # claude api key
-    "claude_api_key": "",
-    # 通义千问API, 获取方式查看文档 https://help.aliyun.com/document_detail/2587494.html
-    "qwen_access_key_id": "",
-    "qwen_access_key_secret": "",
-    "qwen_agent_key": "",
-    "qwen_app_id": "",
-    "qwen_node_id": "",  # 流程编排模型用到的id，如果没有用到qwen_node_id，请务必保持为空字符串
-    # 阿里灵积(通义新版sdk)模型api key
-    "dashscope_api_key": "",
-    # Google Gemini Api Key
-    "gemini_api_key": "",
     # 语音设置
     "speech_recognition": True,  # 是否开启语音识别
     "group_speech_recognition": False,  # 是否开启群组语音识别
@@ -160,7 +156,7 @@ available_setting = {
     "weixin_token": "",  # 微信登录后获取的bot_token，留空则启动时自动扫码登录
     "weixin_base_url": "https://ilinkai.weixin.qq.com",  # Weixin ilink API base URL
     "weixin_cdn_base_url": "https://novac2c.cdn.weixin.qq.com/c2c",  # CDN base URL
-    "weixin_credentials_path": "~/.weixin_cow_credentials.json",  # credentials file path
+    "weixin_credentials_path": "~/.cowagent/weixin_credentials.json",  # credentials file path
     # chatgpt指令自定义触发词
     "clear_memory_commands": ["#清除记忆"],  # 重置会话指令，必须以#开头
     # channel配置
@@ -175,28 +171,13 @@ available_setting = {
     "use_global_plugin_config": False,
     "max_media_send_count": 3,  # 单次最大发送媒体资源的个数
     "media_send_interval": 1,  # 发送图片的事件间隔，单位秒
-    # 智谱AI 平台配置
-    "zhipu_ai_api_key": "",
-    "zhipu_ai_api_base": "https://open.bigmodel.cn/api/paas/v4",
-    "moonshot_api_key": "",
-    "moonshot_base_url": "https://api.moonshot.cn/v1",
-    # 豆包(火山方舟) 平台配置
-    "ark_api_key": "",
-    "ark_base_url": "https://ark.cn-beijing.volces.com/api/v3",
-    # 魔搭社区 平台配置
-    "modelscope_api_key": "",
-    "modelscope_base_url": "https://api-inference.modelscope.cn/v1/chat/completions",
     # LinkAI平台配置
     "use_linkai": False,
-    "linkai_api_key": "",
     "linkai_app_code": "",
-    "linkai_api_base": "https://api.link-ai.tech",  # linkAI服务地址
     "cloud_host": "client.link-ai.tech",
     "cloud_port": None,
     "cloud_deployment_id": "",
-    "minimax_api_key": "",
     "Minimax_group_id": "",
-    "Minimax_base_url": "",
     "web_port": 9899,
     "agent": True,  # 是否开启Agent模式
     "agent_workspace": "~/.cowagent",  # agent工作空间路径，用于存储skills、memory等
@@ -365,7 +346,10 @@ def load_config():
     logger.info("[INIT] System Initialization")
     logger.info("[INIT] ========================================")
     logger.info("[INIT] Channel: {}".format(config.get("channel_type", "unknown")))
-    logger.info("[INIT] Model: {}".format(config.get("model", "unknown")))
+    logger.info("[INIT] Model: {} ({})".format(
+        config.get("llm_model", "unknown"),
+        config.get("llm_provider", "unknown")
+    ))
 
     # Agent模式信息
     if config.get("agent", False):
@@ -382,35 +366,12 @@ def load_config():
     # Sync selected config values to environment variables so that
     # subprocesses (e.g. shell skill scripts) can access them directly.
     # Existing env vars are NOT overwritten (env takes precedence).
+    # Sync unified LLM config to environment variables so that
+    # subprocesses (e.g. shell skill scripts) can access them directly.
+    # Existing env vars are NOT overwritten (env takes precedence).
     _CONFIG_TO_ENV = {
-        "open_ai_api_key": "OPENAI_API_KEY",
-        "open_ai_api_base": "OPENAI_API_BASE",
-        "linkai_api_key": "LINKAI_API_KEY",
-        "linkai_api_base": "LINKAI_API_BASE",
-        "claude_api_key": "CLAUDE_API_KEY",
-        "claude_api_base": "CLAUDE_API_BASE",
-        "gemini_api_key": "GEMINI_API_KEY",
-        "gemini_api_base": "GEMINI_API_BASE",
-        "minimax_api_key": "MINIMAX_API_KEY",
-        "minimax_api_base": "MINIMAX_API_BASE",
-        "zhipu_ai_api_key": "ZHIPU_AI_API_KEY",
-        "zhipu_ai_api_base": "ZHIPU_AI_API_BASE",
-        "moonshot_api_key": "MOONSHOT_API_KEY",
-        "moonshot_api_base": "MOONSHOT_API_BASE",
-        "ark_api_key": "ARK_API_KEY",
-        "ark_api_base": "ARK_API_BASE",
-        # Channel credentials (used by skills that check env vars)
-        "feishu_app_id": "FEISHU_APP_ID",
-        "feishu_app_secret": "FEISHU_APP_SECRET",
-        "dingtalk_client_id": "DINGTALK_CLIENT_ID",
-        "dingtalk_client_secret": "DINGTALK_CLIENT_SECRET",
-        "wechatmp_app_id": "WECHATMP_APP_ID",
-        "wechatmp_app_secret": "WECHATMP_APP_SECRET",
-        "wechatcomapp_agent_id": "WECHATCOMAPP_AGENT_ID",
-        "wechatcomapp_secret": "WECHATCOMAPP_SECRET",
-        "qq_app_id": "QQ_APP_ID",
-        "qq_app_secret": "QQ_APP_SECRET",
-        "weixin_token": "WEIXIN_TOKEN",
+        "llm_api_key": "OPENAI_API_KEY",
+        "llm_api_base": "OPENAI_API_BASE",
     }
     injected = 0
     for conf_key, env_key in _CONFIG_TO_ENV.items():

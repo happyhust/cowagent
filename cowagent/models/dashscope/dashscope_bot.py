@@ -33,17 +33,17 @@ class DashscopeBot(Bot):
     def __init__(self):
         super().__init__()
         self.sessions = SessionManager(
-            DashscopeSession, model=conf().get("model") or "qwen3.6-plus"
+            DashscopeSession, model=conf().get("llm_model") or "qwen3.6-plus"
         )
-        self.model_name = conf().get("model") or "qwen3.6-plus"
+        self.model_name = conf().get("llm_model") or "qwen3.6-plus"
         self.client = dashscope.Generation
-        api_key = conf().get("dashscope_api_key")
+        api_key = conf().get("llm_api_key")
         if api_key:
             os.environ["DASHSCOPE_API_KEY"] = api_key
 
     @property
     def api_key(self):
-        return conf().get("dashscope_api_key")
+        return conf().get("llm_api_key")
 
     @staticmethod
     def _is_multimodal_model(model_name: str) -> bool:

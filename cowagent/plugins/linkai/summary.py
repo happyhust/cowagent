@@ -73,10 +73,10 @@ class LinkSummary:
             return None
 
     def base_url(self):
-        return conf().get("linkai_api_base", "https://api.link-ai.tech")
+        return conf().get("llm_api_base", "https://api.link-ai.tech")
 
     def headers(self):
-        return {"Authorization": "Bearer " + conf().get("linkai_api_key")}
+        return {"Authorization": "Bearer " + conf().get("llm_api_key")}
 
     def check_file(self, file_path: str, sum_config: dict) -> bool:
         file_size = os.path.getsize(file_path) // 1000

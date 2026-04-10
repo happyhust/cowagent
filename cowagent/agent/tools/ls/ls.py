@@ -12,6 +12,7 @@ from cowagent.agent.tools.utils.truncate import (
     DEFAULT_MAX_BYTES,
 )
 from cowagent.common.utils import expand_path
+from cowagent.config import conf
 
 
 DEFAULT_LIMIT = 500
@@ -56,8 +57,8 @@ class Ls(BaseTool):
         absolute_path = self._resolve_path(path)
 
         # Security check: Prevent accessing sensitive config directory
-        env_config_dir = expand_path("~/.cow")
-        if os.path.abspath(absolute_path) == os.path.abspath(env_config_dir):
+        workspace = expand_path(conf().get("agent_workspace", "~/.cowagent"))
+        if os.path.abspath(absolute_path) == os.path.abspath(workspace):
             return ToolResult.fail(
                 "Error: Access denied. API keys and credentials must be accessed through the env_config tool only."
             )

@@ -240,7 +240,7 @@ class WebSearch(BaseTool):
         :return: Formatted search results
         """
         api_key = os.environ.get("LINKAI_API_KEY", "")
-        api_base = conf().get("linkai_api_base", "https://api.link-ai.tech")
+        api_base = conf().get("llm_api_base", "https://api.link-ai.tech")
         url = f"{api_base.rstrip('/')}/v1/plugin/execute"
 
         from cowagent.common.utils import get_cloud_headers

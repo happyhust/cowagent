@@ -29,9 +29,9 @@ class BaiduWenxinBot(Bot):
         if wenxin_model is not None:
             wenxin_model = conf().get("baidu_wenxin_model") or "eb-instant"
         else:
-            if conf().get("model") and conf().get("model") == const.WEN_XIN:
+            if conf().get("llm_model") and conf().get("llm_model") == const.WEN_XIN:
                 wenxin_model = "completions"
-            elif conf().get("model") and conf().get("model") == const.WEN_XIN_4:
+            elif conf().get("llm_model") and conf().get("llm_model") == const.WEN_XIN_4:
                 wenxin_model = "completions_pro"
 
         self.sessions = SessionManager(BaiduWenxinSession, model=wenxin_model)

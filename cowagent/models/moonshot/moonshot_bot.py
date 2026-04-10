@@ -18,9 +18,9 @@ class MoonshotBot(Bot):
     def __init__(self):
         super().__init__()
         self.sessions = SessionManager(
-            MoonshotSession, model=conf().get("model") or "moonshot-v1-128k"
+            MoonshotSession, model=conf().get("llm_model") or "moonshot-v1-128k"
         )
-        model = conf().get("model") or "moonshot-v1-128k"
+        model = conf().get("llm_model") or "moonshot-v1-128k"
         if model == "moonshot":
             model = "moonshot-v1-32k"
         self.args = {
@@ -31,11 +31,11 @@ class MoonshotBot(Bot):
 
     @property
     def api_key(self):
-        return conf().get("moonshot_api_key")
+        return conf().get("llm_api_key")
 
     @property
     def base_url(self):
-        url = conf().get("moonshot_base_url", "https://api.moonshot.cn/v1")
+        url = conf().get("llm_api_base", "https://api.moonshot.cn/v1")
         if url.endswith("/chat/completions"):
             url = url.rsplit("/chat/completions", 1)[0]
         return url.rstrip("/")

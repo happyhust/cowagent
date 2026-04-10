@@ -89,10 +89,8 @@ class Vision(BaseTool):
     @staticmethod
     def is_available() -> bool:
         return bool(
-            conf().get("open_ai_api_key")
+            conf().get("llm_api_key")
             or os.environ.get("OPENAI_API_KEY")
-            or conf().get("linkai_api_key")
-            or os.environ.get("LINKAI_API_KEY")
         )
 
     def execute(self, args: Dict[str, Any]) -> ToolResult:
@@ -183,14 +181,14 @@ class Vision(BaseTool):
         bot_type = conf().get("bot_type", "")
         if bot_type not in OPENAI_COMPATIBLE_BOT_TYPES:
             return None
-        custom_model = conf().get("model", "")
+        custom_model = conf().get("llm_model", "")
         if not custom_model or custom_model == DEFAULT_MODEL:
             return None
-        api_key = conf().get("open_ai_api_key") or os.environ.get("OPENAI_API_KEY")
+        api_key = conf().get("llm_api_key") or os.environ.get("OPENAI_API_KEY")
         if not api_key:
             return None
         api_base = (
-            conf().get("open_ai_api_base") or os.environ.get("OPENAI_API_BASE", "")
+            conf().get("llm_api_base") or os.environ.get("OPENAI_API_BASE", "")
         ).rstrip("/") or "https://api.openai.com/v1"
         return VisionProvider(
             name="CustomModel",
@@ -200,22 +198,22 @@ class Vision(BaseTool):
         )
 
     def _build_openai_provider(self) -> Optional[VisionProvider]:
-        api_key = conf().get("open_ai_api_key") or os.environ.get("OPENAI_API_KEY")
+        api_key = conf().get("llm_api_key") or os.environ.get("OPENAI_API_KEY")
         if not api_key:
             return None
         api_base = (
-            conf().get("open_ai_api_base") or os.environ.get("OPENAI_API_BASE", "")
+            conf().get("llm_api_base") or os.environ.get("OPENAI_API_BASE", "")
         ).rstrip("/") or "https://api.openai.com/v1"
         return VisionProvider(
             name="OpenAI", api_key=api_key, api_base=self._ensure_v1(api_base)
         )
 
     def _build_linkai_provider(self) -> Optional[VisionProvider]:
-        api_key = conf().get("linkai_api_key") or os.environ.get("LINKAI_API_KEY")
+        api_key = conf().get("llm_api_key") or os.environ.get("LINKAI_API_KEY")
         if not api_key:
             return None
         api_base = (
-            conf().get("linkai_api_base") or os.environ.get("LINKAI_API_BASE", "")
+            conf().get("llm_api_base") or os.environ.get("LINKAI_API_BASE", "")
         ).rstrip("/") or "https://api.link-ai.tech"
         from cowagent.common.utils import get_cloud_headers
 

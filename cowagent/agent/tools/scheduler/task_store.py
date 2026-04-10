@@ -8,6 +8,7 @@ import threading
 from datetime import datetime
 from typing import Dict, List, Optional
 from cowagent.common.utils import expand_path
+from cowagent.config import conf
 
 
 class TaskStore:
@@ -20,12 +21,11 @@ class TaskStore:
         Initialize task store
 
         Args:
-            store_path: Path to tasks.json file. Defaults to ~/.cowagent/scheduler/tasks.json
+            store_path: Path to tasks.json file. Defaults to agent_workspace/scheduler/tasks.json
         """
         if store_path is None:
-            # Default to ~/.cowagent/scheduler/tasks.json
-            home = expand_path("~")
-            store_path = os.path.join(home, ".cowagent", "scheduler", "tasks.json")
+            workspace = expand_path(conf().get("agent_workspace", "~/.cowagent"))
+            store_path = os.path.join(workspace, "scheduler", "tasks.json")
 
         self.store_path = store_path
         self.lock = threading.Lock()

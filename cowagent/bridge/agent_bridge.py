@@ -45,9 +45,9 @@ def add_openai_compatible_support(bot_instance):
             from cowagent.config import conf
 
             return {
-                "api_key": conf().get("open_ai_api_key"),
-                "api_base": conf().get("open_ai_api_base"),
-                "model": conf().get("model", "gpt-3.5-turbo"),
+                "api_key": conf().get("llm_api_key"),
+                "api_base": conf().get("llm_api_base"),
+                "model": conf().get("llm_model", "gpt-3.5-turbo"),
                 "default_temperature": conf().get("temperature", 0.9),
                 "default_top_p": conf().get("top_p", 1.0),
                 "default_frequency_penalty": conf().get("frequency_penalty", 0.0),
@@ -91,7 +91,7 @@ class AgentLLMModel(LLMModel):
     def __init__(self, bridge: Bridge, bot_type: str = "chat"):
         from cowagent.config import conf
 
-        super().__init__(model=conf().get("model", const.GPT_41))
+        super().__init__(model=conf().get("llm_model", const.GPT_41))
         self.bridge = bridge
         self.bot_type = bot_type
         self._bot = None
@@ -101,7 +101,7 @@ class AgentLLMModel(LLMModel):
     def model(self):
         from cowagent.config import conf
 
-        return conf().get("model", const.GPT_41)
+        return conf().get("llm_model", const.GPT_41)
 
     @model.setter
     def model(self, value):
@@ -111,7 +111,7 @@ class AgentLLMModel(LLMModel):
         """Resolve bot type from model name, matching Bridge.__init__ logic."""
         from cowagent.config import conf
 
-        if conf().get("use_linkai", False) and conf().get("linkai_api_key"):
+        if conf().get("use_linkai", False) and conf().get("llm_api_key"):
             return const.LINKAI
         # Support custom bot type configuration
         configured_bot_type = conf().get("bot_type")
@@ -574,15 +574,12 @@ class AgentBridge:
 
         # Mapping from config.json keys to environment variable names
         key_mapping = {
-            "open_ai_api_key": "OPENAI_API_KEY",
-            "open_ai_api_base": "OPENAI_API_BASE",
-            "gemini_api_key": "GEMINI_API_KEY",
-            "claude_api_key": "CLAUDE_API_KEY",
-            "linkai_api_key": "LINKAI_API_KEY",
+            "llm_api_key": "OPENAI_API_KEY",
+            "llm_api_base": "OPENAI_API_BASE",
         }
 
-        # Use fixed secure location for .env file
-        env_file = expand_path("~/.cow/.env")
+        # Use workspace-root-relative .env file
+        env_file = os.path.join(workspace_root, ".env")
 
         # Read existing env vars from .env file
         existing_env_vars = {}
@@ -618,7 +615,7 @@ class AgentBridge:
         # Write new keys to .env file
         if keys_to_migrate:
             try:
-                # Ensure ~/.cow directory and .env file exist
+                # Ensure ~/.cowagent directory and .env file exist
                 env_dir = os.path.dirname(env_file)
                 if not os.path.exists(env_dir):
                     os.makedirs(env_dir, exist_ok=True)

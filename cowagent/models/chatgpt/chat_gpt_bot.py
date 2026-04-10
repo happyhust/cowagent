@@ -29,17 +29,17 @@ class ChatGPTBot(Bot, OpenAIImage, OpenAICompatibleBot):
     def __init__(self):
         super().__init__()
         # set the default api_key
-        openai.api_key = conf().get("open_ai_api_key")
-        if conf().get("open_ai_api_base"):
-            openai.api_base = conf().get("open_ai_api_base")
+        openai.api_key = conf().get("llm_api_key")
+        if conf().get("llm_api_base"):
+            openai.api_base = conf().get("llm_api_base")
         proxy = conf().get("proxy")
         if proxy:
             openai.proxy = proxy
         if conf().get("rate_limit_chatgpt"):
             self.tb4chatgpt = TokenBucket(conf().get("rate_limit_chatgpt", 20))
-        conf_model = conf().get("model") or "gpt-3.5-turbo"
+        conf_model = conf().get("llm_model") or "gpt-3.5-turbo"
         self.sessions = SessionManager(
-            ChatGPTSession, model=conf().get("model") or "gpt-3.5-turbo"
+            ChatGPTSession, model=conf().get("llm_model") or "gpt-3.5-turbo"
         )
         # o1相关模型不支持system prompt，暂时用文心模型的session
 
@@ -84,15 +84,15 @@ class ChatGPTBot(Bot, OpenAIImage, OpenAICompatibleBot):
                 const.O1_MINI,
             ]:  # o1系列模型不支持系统提示词，使用文心模型的session
                 self.sessions = SessionManager(
-                    BaiduWenxinSession, model=conf().get("model") or const.O1_MINI
+                    BaiduWenxinSession, model=conf().get("llm_model") or const.O1_MINI
                 )
 
     def get_api_config(self):
         """Get API configuration for OpenAI-compatible base class"""
         return {
-            "api_key": conf().get("open_ai_api_key"),
-            "api_base": conf().get("open_ai_api_base"),
-            "model": conf().get("model", "gpt-3.5-turbo"),
+            "api_key": conf().get("llm_api_key"),
+            "api_base": conf().get("llm_api_base"),
+            "model": conf().get("llm_model", "gpt-3.5-turbo"),
             "default_temperature": conf().get("temperature", 0.9),
             "default_top_p": conf().get("top_p", 1.0),
             "default_frequency_penalty": conf().get("frequency_penalty", 0.0),
@@ -206,9 +206,9 @@ class ChatGPTBot(Bot, OpenAIImage, OpenAICompatibleBot):
             mime_type = mime_type_map.get(extension, "image/jpeg")
 
             # Get model and API config
-            model = context.get("gpt_model") or conf().get("model", "gpt-4o")
-            api_key = context.get("openai_api_key") or conf().get("open_ai_api_key")
-            api_base = conf().get("open_ai_api_base")
+            model = context.get("gpt_model") or conf().get("llm_model", "gpt-4o")
+            api_key = context.get("openai_api_key") or conf().get("llm_api_key")
+            api_base = conf().get("llm_api_base")
 
             # Build vision request
             messages = [
@@ -333,14 +333,14 @@ class AzureChatGPTBot(ChatGPTBot):
         text_to_image_model = conf().get("text_to_image")
         if text_to_image_model == "dall-e-2":
             api_version = "2023-06-01-preview"
-            endpoint = conf().get("azure_openai_dalle_api_base", "open_ai_api_base")
+            endpoint = conf().get("azure_openai_dalle_api_base", "llm_api_base")
             # 检查endpoint是否以/结尾
             if not endpoint.endswith("/"):
                 endpoint = endpoint + "/"
             url = "{}openai/images/generations:submit?api-version={}".format(
                 endpoint, api_version
             )
-            api_key = conf().get("azure_openai_dalle_api_key", "open_ai_api_key")
+            api_key = conf().get("azure_openai_dalle_api_key", "llm_api_key")
             headers = {"api-key": api_key, "Content-Type": "application/json"}
             try:
                 body = {
@@ -364,7 +364,7 @@ class AzureChatGPTBot(ChatGPTBot):
                 return False, "图片生成失败"
         elif text_to_image_model == "dall-e-3":
             api_version = conf().get("azure_api_version", "2024-02-15-preview")
-            endpoint = conf().get("azure_openai_dalle_api_base", "open_ai_api_base")
+            endpoint = conf().get("azure_openai_dalle_api_base", "llm_api_base")
             # 检查endpoint是否以/结尾
             if not endpoint.endswith("/"):
                 endpoint = endpoint + "/"
@@ -373,7 +373,7 @@ class AzureChatGPTBot(ChatGPTBot):
                 conf().get("azure_openai_dalle_deployment_id", "text_to_image"),
                 api_version,
             )
-            api_key = conf().get("azure_openai_dalle_api_key", "open_ai_api_key")
+            api_key = conf().get("azure_openai_dalle_api_key", "llm_api_key")
             headers = {"api-key": api_key, "Content-Type": "application/json"}
             try:
                 body = {
