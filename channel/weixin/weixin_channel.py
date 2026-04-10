@@ -435,9 +435,9 @@ class WeixinChannel(ChatChannel):
         context = self._compose_context(
             wx_msg.ctype,
             wx_msg.content,
-            isgroup=False,
+            isgroup=getattr(wx_msg, "is_group", False),
             msg=wx_msg,
-            no_need_at=True,
+            no_need_at=not getattr(wx_msg, "is_group", False),
         )
         if context:
             self.produce(context)

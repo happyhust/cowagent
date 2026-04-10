@@ -267,7 +267,7 @@ cow update             # 拉取最新代码并重启
 nohup python3 app.py & tail -f nohup.out
 ```
 
-此外，项目根目录下的 `run.sh` 脚本也支持一键管理服务，包括 `./run.sh start`、`./run.sh stop`、`./run.sh restart` 等命令，执行 `./run.sh help` 可查看全部用法。
+此外，项目 `scripts/run.sh` 脚本也支持一键管理服务，包括 `./scripts/run.sh start`、`./scripts/run.sh stop`、`./scripts/run.sh restart` 等命令，执行 `./scripts/run.sh help` 可查看全部用法。
 
 > 如果需要通过浏览器访问 Web 控制台，请确保服务器的 `9899` 端口已在防火墙或安全组中放行，建议仅对指定 IP 开放以保证安全。
 

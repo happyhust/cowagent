@@ -39,20 +39,39 @@ class WeixinMessage(ChatMessage):
         self.msg_id = str(msg.get("message_id", msg.get("seq", uuid.uuid4().hex[:8])))
         self.create_time = msg.get("create_time_ms", 0)
         self.context_token = msg.get("context_token", "")
-        self.is_group = False  # Weixin plugin only supports direct chat
         self.is_at = False
 
         from_user_id = msg.get("from_user_id", "")
         to_user_id = msg.get("to_user_id", "")
 
+        # Detect if message is from a group (chatroom IDs typically end with @chatroom)
+        self.is_group = from_user_id.endswith("@chatroom")
+
+        # Extra group info: actual_user_id is the real sender in group,
+        # other_user_id is the group itself
+        if self.is_group:
+            self.actual_user_id = msg.get("actual_user_id", from_user_id)
+            self.actual_user_nickname = msg.get("actual_user_nickname", "")
+            self.other_user_id = from_user_id
+            self.other_user_nickname = msg.get("chatroom_name", from_user_id)
+            self.is_group_msg = True  # compat with old code
+        else:
+            self.actual_user_id = from_user_id
+            self.actual_user_nickname = from_user_id
+            self.other_user_id = from_user_id
+            self.other_user_nickname = from_user_id
+            self.is_group_msg = False  # compat with old code
+
+        # Check if the message contains @mentions
+        is_group_at = msg.get("is_at", False) or msg.get("is_group_at", False)
+        if is_group_at:
+            self.is_at = True
+        self.at_list = msg.get("at_list", [])
+
         self.from_user_id = from_user_id
-        self.from_user_nickname = from_user_id
+        self.from_user_nickname = msg.get("from_user_nickname", from_user_id)
         self.to_user_id = to_user_id
-        self.to_user_nickname = to_user_id
-        self.other_user_id = from_user_id
-        self.other_user_nickname = from_user_id
-        self.actual_user_id = from_user_id
-        self.actual_user_nickname = from_user_id
+        self.to_user_nickname = msg.get("to_user_nickname", to_user_id)
 
         item_list = msg.get("item_list", [])
 
