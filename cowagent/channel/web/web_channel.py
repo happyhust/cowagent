@@ -4,13 +4,12 @@ import logging
 import mimetypes
 import os
 import threading
-import time
 import uuid
 from queue import Queue, Empty
 
 import web
 
-from cowagent.bridge.context import *
+from cowagent.bridge.context import ContextType, Context
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.channel.chat_channel import ChatChannel, check_prefix
 from cowagent.channel.chat_message import ChatMessage
@@ -27,7 +26,7 @@ VIDEO_EXTENSIONS = {".mp4", ".webm", ".avi", ".mov", ".mkv"}
 def _get_upload_dir() -> str:
     from cowagent.common.utils import expand_path
 
-    ws_root = expand_path(conf().get("agent_workspace", "~/cow"))
+    ws_root = expand_path(conf().get("agent_workspace", "~/.cowagent"))
     tmp_dir = os.path.join(ws_root, "tmp")
     os.makedirs(tmp_dir, exist_ok=True)
     return tmp_dir
@@ -239,7 +238,6 @@ class WebChannel(ChatChannel):
         try:
             params = web.input(file={}, session_id="")
             file_obj = params.get("file")
-            session_id = params.get("session_id", "")
             if (
                 file_obj is None
                 or not hasattr(file_obj, "filename")
@@ -1652,7 +1650,7 @@ def _get_workspace_root():
     """Resolve the agent workspace directory."""
     from cowagent.common.utils import expand_path
 
-    return expand_path(conf().get("agent_workspace", "~/cow"))
+    return expand_path(conf().get("agent_workspace", "~/.cowagent"))
 
 
 class ToolsHandler:

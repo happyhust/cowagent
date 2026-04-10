@@ -2,12 +2,11 @@ from chatgpt_tool_hub.apps import AppFactory
 from chatgpt_tool_hub.apps.app import App
 from chatgpt_tool_hub.tools.tool_register import main_tool_register
 
-import cowagent.plugins
 from cowagent.bridge.bridge import Bridge
 from cowagent.bridge.context import ContextType
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common import const
-from cowagent.config import conf, get_appdata_dir
+from cowagent.config import conf
 from cowagent.plugins import *
 
 
@@ -44,7 +43,7 @@ class Tool(Plugin):
         )
         help_text += f"{trigger_prefix}tool reset: 重置工具。\n\n"
 
-        help_text += f"已加载工具列表: \n"
+        help_text += "已加载工具列表: \n"
         for idx, tool in enumerate(main_tool_register.get_registered_tool_names()):
             if idx != 0:
                 help_text += ", "

@@ -697,7 +697,7 @@ class AgentBridge:
         from cowagent.config import conf
 
         # Reload environment variables from .env file
-        workspace_root = expand_path(conf().get("agent_workspace", "~/cow"))
+        workspace_root = expand_path(conf().get("agent_workspace", "~/.cowagent"))
         env_file = os.path.join(workspace_root, ".env")
 
         if os.path.exists(env_file):

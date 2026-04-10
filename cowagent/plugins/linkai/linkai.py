@@ -1,4 +1,3 @@
-import cowagent.plugins
 from cowagent.bridge.context import ContextType
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.plugins import *
@@ -9,7 +8,7 @@ from cowagent.common.expired_dict import ExpiredDict
 from cowagent.common import const
 import os
 from .utils import Util
-from cowagent.config import plugin_config, conf
+from cowagent.config import conf
 
 
 @plugins.register(
@@ -233,7 +232,7 @@ class LinkAI(Plugin):
                 is_open = False
             if not self.sum_config:
                 _set_reply_text(
-                    f"插件未启用summary功能，请参考以下链添加插件配置\n\nhttps://github.com/zhayujie/chatgpt-on-wechat/blob/master/plugins/linkai/README.md",
+                    "插件未启用summary功能，请参考以下链添加插件配置\n\nhttps://github.com/zhayujie/chatgpt-on-wechat/blob/master/plugins/linkai/README.md",
                     e_context,
                     level=ReplyType.INFO,
                 )

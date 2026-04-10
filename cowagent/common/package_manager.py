@@ -1,6 +1,5 @@
 import time
 
-import pip
 from pip._internal import main as pipmain
 
 from cowagent.common.log import _reset_logger, logger
@@ -31,6 +30,6 @@ def check_dulwich():
             except Exception:
                 needwait = True
     try:
-        import dulwich
+        import dulwich  # noqa: F401
     except ImportError:
         raise ImportError("Unable to import dulwich")

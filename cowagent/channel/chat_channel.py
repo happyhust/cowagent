@@ -5,16 +5,18 @@ import time
 from asyncio import CancelledError
 from concurrent.futures import Future, ThreadPoolExecutor
 
-from cowagent.bridge.context import *
-from cowagent.bridge.reply import *
+from cowagent.bridge.context import ContextType, Context
+from cowagent.bridge.reply import ReplyType, Reply
 from cowagent.channel.channel import Channel
 from cowagent.common.dequeue import Dequeue
 from cowagent.common import memory
-from cowagent.plugins import *
+from cowagent.plugins import Event, EventContext, PluginManager
+from cowagent.config import conf
+from cowagent.common.log import logger
 
 try:
     from cowagent.voice.audio_convert import any_to_wav
-except Exception as e:
+except Exception:
     pass
 
 handler_pool = ThreadPoolExecutor(max_workers=8)  # 处理消息的线程池
@@ -270,7 +272,7 @@ class ChatChannel(Channel):
                     os.remove(file_path)
                     if wav_path != file_path:
                         os.remove(wav_path)
-                except Exception as e:
+                except Exception:
                     pass
                     # logger.warning("[chat_channel]delete temp file error: " + str(e))
 
@@ -524,7 +526,7 @@ class ChatChannel(Channel):
                     )
                 else:
                     self._success_callback(session_id, **kwargs)
-            except CancelledError as e:
+            except CancelledError:
                 logger.info("Worker cancelled, session_id = {}".format(session_id))
             except Exception as e:
                 logger.exception("Worker raise exception: {}".format(e))

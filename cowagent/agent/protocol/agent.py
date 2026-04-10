@@ -4,13 +4,12 @@ import time
 import threading
 
 from cowagent.common.log import logger
-from cowagent.agent.protocol.models import LLMRequest, LLMModel
+from cowagent.agent.protocol.models import LLMModel
 from cowagent.agent.protocol.agent_stream import AgentStreamExecutor
 from cowagent.agent.protocol.result import (
     AgentAction,
     AgentActionType,
     ToolResult,
-    AgentResult,
 )
 from cowagent.agent.tools.base_tool import BaseTool, ToolStage
 

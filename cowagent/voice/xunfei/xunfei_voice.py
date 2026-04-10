@@ -24,15 +24,13 @@ import time
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common.log import logger
 from cowagent.common.tmp_dir import TmpDir
-from cowagent.config import conf
 from cowagent.voice.voice import Voice
 from .xunfei_asr import xunfei_asr
 from .xunfei_tts import xunfei_tts
-import shutil
 
 try:
-    from cowagent.voice.audio_convert import any_to_mp3
-    from pydub import AudioSegment
+    from cowagent.voice.audio_convert import any_to_mp3  # noqa: F401
+    from pydub import AudioSegment  # noqa: F401
 
     _audio_available = True
 except ImportError as e:
@@ -97,7 +95,7 @@ class XunfeiVoice(Voice):
                 + str(hash(text) & 0x7FFFFFFF)
                 + ".mp3"
             )
-            return_file = xunfei_tts(
+            xunfei_tts(
                 self.APPID,
                 self.APIKey,
                 self.APISecret,
@@ -109,7 +107,7 @@ class XunfeiVoice(Voice):
                 "[Xunfei] textToVoice text={} voice file name={}".format(text, fileName)
             )
             reply = Reply(ReplyType.VOICE, fileName)
-        except Exception as e:
+        except Exception:
             logger.error("[Xunfei] textToVoice error={}".format(fileName))
             reply = Reply(ReplyType.ERROR, "抱歉，讯飞语音合成失败")
         return reply

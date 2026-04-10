@@ -5,7 +5,6 @@ import re
 import time
 import requests
 import json
-import cowagent.config
 from cowagent.models.bot import Bot
 from cowagent.models.openai_compatible_bot import OpenAICompatibleBot
 from cowagent.models.chatgpt.chat_gpt_session import ChatGPTSession
@@ -161,7 +160,7 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
                                     "msg"
                                 ).from_user_nickname
 
-            except Exception as e:
+            except Exception:
                 pass
             file_id = context.kwargs.get("file_id")
             if file_id:
@@ -276,8 +275,9 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
         try:
             if context.kwargs.get("isgroup"):
                 group_name = context.kwargs.get("msg").from_user_nickname
-                if config.plugin_config and config.plugin_config.get("linkai"):
-                    linkai_config = config.plugin_config.get("linkai")
+                plugin_config = conf().get("plugin_config") or {}
+                if plugin_config and plugin_config.get("linkai"):
+                    linkai_config = plugin_config.get("linkai")
                     group_mapping = linkai_config.get("group_app_map")
                     if group_mapping and group_name:
                         return group_mapping.get(group_name)
@@ -421,7 +421,6 @@ class LinkAIBot(Bot, OpenAICompatibleBot):
                 + "/v1/images/generations"
             )
             res = requests.post(url, headers=headers, json=data, timeout=(5, 90))
-            t2 = time.time()
             image_url = res.json()["data"][0]["url"]
             logger.info("[OPEN_AI] image_url={}".format(image_url))
             return True, image_url
@@ -699,14 +698,15 @@ def _linkai_call_with_tools(self, messages, tools=None, stream=False, **kwargs):
 
     except Exception as e:
         logger.error(f"[LinkAI] call_with_tools error: {e}")
+        error_msg = str(e)
         if stream:
 
             def error_generator():
-                yield {"error": True, "message": str(e), "status_code": 500}
+                yield {"error": True, "message": error_msg, "status_code": 500}
 
             return error_generator()
         else:
-            return {"error": True, "message": str(e), "status_code": 500}
+            return {"error": True, "message": error_msg, "status_code": 500}
 
 
 def _handle_linkai_sync_response(self, base_url, headers, body):

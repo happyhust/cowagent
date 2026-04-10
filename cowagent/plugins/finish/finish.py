@@ -1,6 +1,5 @@
 # encoding:utf-8
 
-import cowagent.plugins
 from cowagent.bridge.context import ContextType
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common.log import logger

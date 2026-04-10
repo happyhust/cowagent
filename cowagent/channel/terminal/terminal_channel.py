@@ -1,6 +1,6 @@
 import sys
 
-from cowagent.bridge.context import *
+from cowagent.bridge.context import ContextType, Context
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.channel.chat_channel import ChatChannel, check_prefix
 from cowagent.channel.chat_message import ChatMessage

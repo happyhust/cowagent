@@ -212,14 +212,15 @@ class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
 
         except Exception as e:
             logger.error(f"[OPEN_AI] call_with_tools error: {e}")
+            error_msg = str(e)
             if stream:
 
                 def error_generator():
-                    yield {"error": True, "message": str(e), "status_code": 500}
+                    yield {"error": True, "message": error_msg, "status_code": 500}
 
                 return error_generator()
             else:
-                return {"error": True, "message": str(e), "status_code": 500}
+                return {"error": True, "message": error_msg, "status_code": 500}
 
     def _handle_sync_response(self, request_params):
         """Handle synchronous OpenAI ChatCompletion API response"""

@@ -10,9 +10,8 @@ import os
 import shutil
 import zipfile
 import tempfile
-from typing import Dict, List, Optional
+from typing import List, Optional
 from cowagent.common.log import logger
-from cowagent.agent.skills.types import Skill, SkillEntry
 from cowagent.agent.skills.manager import SkillManager
 
 try:

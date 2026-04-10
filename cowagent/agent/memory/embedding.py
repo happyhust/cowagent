@@ -89,11 +89,11 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
                 raise ValueError(
-                    f"Invalid OpenAI API key. Please check your 'open_ai_api_key' in config.json"
+                    "Invalid OpenAI API key. Please check your 'open_ai_api_key' in config.json"
                 )
             elif e.response.status_code == 429:
                 raise ValueError(
-                    f"OpenAI API rate limit exceeded. Please try again later."
+                    "OpenAI API rate limit exceeded. Please try again later."
                 )
             else:
                 raise ValueError(

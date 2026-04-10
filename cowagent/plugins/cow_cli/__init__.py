@@ -1,1 +1,1 @@
-from .cow_cli import CowCliPlugin
+from .cow_cli import CowCliPlugin as CowCliPlugin

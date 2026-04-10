@@ -17,13 +17,7 @@ from typing import Optional, Dict, Any, List, Callable
 from cowagent.common.log import logger
 
 try:
-    from playwright.sync_api import (
-        sync_playwright,
-        Browser,
-        BrowserContext,
-        Page,
-        Playwright,
-    )
+    from playwright.sync_api import sync_playwright
 
     _HAS_PLAYWRIGHT = True
 except ImportError:

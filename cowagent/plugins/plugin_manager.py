@@ -9,7 +9,7 @@ import sys
 from cowagent.common.log import logger
 from cowagent.common.singleton import singleton
 from cowagent.common.sorted_dict import SortedDict
-from cowagent.config import conf, remove_plugin_config, write_plugin_config
+from cowagent.config import remove_plugin_config, write_plugin_config
 
 from .event import *
 
@@ -32,16 +32,16 @@ class PluginManager:
             plugincls.author = kwargs.get("author")
             plugincls.path = self.current_plugin_path
             plugincls.version = (
-                kwargs.get("version") if kwargs.get("version") != None else "1.0"
+                kwargs.get("version") if kwargs.get("version") is not None else "1.0"
             )
             plugincls.namecn = (
-                kwargs.get("namecn") if kwargs.get("namecn") != None else name
+                kwargs.get("namecn") if kwargs.get("namecn") is not None else name
             )
             plugincls.hidden = (
-                kwargs.get("hidden") if kwargs.get("hidden") != None else False
+                kwargs.get("hidden") if kwargs.get("hidden") is not None else False
             )
             plugincls.enabled = True
-            if self.current_plugin_path == None:
+            if self.current_plugin_path is None:
                 raise Exception("Plugin path not set")
             self.plugins[name.upper()] = plugincls
             logger.debug(

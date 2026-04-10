@@ -3,7 +3,6 @@
 import json
 import os
 import requests
-import cowagent.plugins
 from cowagent.bridge.context import ContextType
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common.log import logger

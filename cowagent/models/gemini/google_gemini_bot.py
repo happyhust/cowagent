@@ -20,7 +20,6 @@ from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common.log import logger
 from cowagent.config import conf
 from cowagent.models.chatgpt.chat_gpt_session import ChatGPTSession
-from cowagent.models.baidu.baidu_wenxin_session import BaiduWenxinSession
 
 
 # OpenAI对话模型API (可用)
@@ -633,8 +632,6 @@ class GoogleGeminiBot(Bot):
             has_sent_tool_calls = False
             has_content = False  # Track if any content was sent
             chunk_count = 0
-            last_finish_reason = None
-            last_safety_ratings = None
 
             for line in response.iter_lines():
                 if not line:
@@ -662,9 +659,9 @@ class GoogleGeminiBot(Bot):
 
                     # 记录 finish_reason 和 safety_ratings
                     if "finishReason" in candidate:
-                        last_finish_reason = candidate["finishReason"]
+                        candidate["finishReason"]
                     if "safetyRatings" in candidate:
-                        last_safety_ratings = candidate["safetyRatings"]
+                        candidate["safetyRatings"]
 
                     content = candidate.get("content", {})
                     parts = content.get("parts", [])
@@ -731,7 +728,7 @@ class GoogleGeminiBot(Bot):
 
             # 如果返回空响应，记录详细警告
             if not has_content and not all_tool_calls:
-                logger.warning(f"[Gemini] ⚠️  Empty response detected!")
+                logger.warning("[Gemini] ⚠️  Empty response detected!")
 
             # Final chunk
             yield {

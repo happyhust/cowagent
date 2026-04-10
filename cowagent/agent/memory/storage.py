@@ -85,7 +85,7 @@ class MemoryStorage:
                 result = self.conn.execute("PRAGMA integrity_check").fetchone()
                 if result[0] != "ok":
                     print(f"⚠️  Database integrity check failed: {result[0]}")
-                    print(f"   Recreating database...")
+                    print("   Recreating database...")
                     self.conn.close()
                     self.conn = None
                     # Remove corrupted database
@@ -100,7 +100,7 @@ class MemoryStorage:
                     self.conn.row_factory = sqlite3.Row
             except sqlite3.DatabaseError:
                 # Database is corrupted, recreate it
-                print(f"⚠️  Database is corrupted, recreating...")
+                print("⚠️  Database is corrupted, recreating...")
                 if self.conn:
                     self.conn.close()
                     self.conn = None

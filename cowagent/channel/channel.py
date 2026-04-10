@@ -4,7 +4,7 @@ Message sending channel abstract class
 
 from cowagent.bridge.bridge import Bridge
 from cowagent.bridge.context import Context
-from cowagent.bridge.reply import *
+from cowagent.bridge.reply import ReplyType, Reply
 from cowagent.common.log import logger
 from cowagent.config import conf
 

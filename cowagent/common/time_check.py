@@ -1,12 +1,12 @@
 import re
 import time
-import cowagent.config
 from cowagent.common.log import logger
+from cowagent.config import conf
 
 
 def time_checker(f):
     def _time_checker(self, *args, **kwargs):
-        _config = config.conf()
+        _config = conf()
         chat_time_module = _config.get("chat_time_module", False)
 
         if chat_time_module:

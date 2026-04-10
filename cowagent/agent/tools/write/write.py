@@ -5,7 +5,6 @@ Creates or overwrites files, automatically creates parent directories
 
 import os
 from typing import Dict, Any
-from pathlib import Path
 
 from cowagent.agent.tools.base_tool import BaseTool, ToolResult
 from cowagent.common.utils import expand_path

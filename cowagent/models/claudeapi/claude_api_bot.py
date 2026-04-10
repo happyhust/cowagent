@@ -283,15 +283,16 @@ class ClaudeAPIBot(Bot, OpenAIImage):
                 return self._handle_sync_response(request_params)
         except Exception as e:
             logger.error(f"Claude API call error: {e}")
+            error_msg = str(e)
             if stream:
                 # Return error generator for stream
                 def error_generator():
-                    yield {"error": True, "message": str(e), "status_code": 500}
+                    yield {"error": True, "message": error_msg, "status_code": 500}
 
                 return error_generator()
             else:
                 # Return error response for sync
-                return {"error": True, "message": str(e), "status_code": 500}
+                return {"error": True, "message": error_msg, "status_code": 500}
 
     def _handle_sync_response(self, request_params):
         """Handle synchronous Claude API response"""

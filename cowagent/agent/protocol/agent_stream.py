@@ -169,7 +169,7 @@ class AgentStreamExecutor:
         if same_tool_failures >= 8:
             return (
                 True,
-                f"抱歉，我没能完成这个任务。可能是我理解有误或者当前方法不太合适。\n\n建议你：\n• 换个方式描述需求试试\n• 把任务拆分成更小的步骤\n• 或者换个思路来解决",
+                "抱歉，我没能完成这个任务。可能是我理解有误或者当前方法不太合适。\n\n建议你：\n• 换个方式描述需求试试\n• 把任务拆分成更小的步骤\n• 或者换个思路来解决",
                 True,
             )
 
@@ -239,16 +239,16 @@ class AgentStreamExecutor:
                     # 检查是否返回了空响应
                     if not assistant_msg:
                         logger.warning(
-                            f"[Agent] LLM returned empty response after retry (no content and no tool calls)"
+                            "[Agent] LLM returned empty response after retry (no content and no tool calls)"
                         )
                         logger.info(
-                            f"[Agent] This usually happens when LLM thinks the task is complete after tool execution"
+                            "[Agent] This usually happens when LLM thinks the task is complete after tool execution"
                         )
 
                         # 如果之前有工具调用，强制要求 LLM 生成文本回复
                         if turn > 1:
                             logger.info(
-                                f"[Agent] Requesting explicit response from LLM..."
+                                "[Agent] Requesting explicit response from LLM..."
                             )
 
                             # 添加一条消息，明确要求回复用户
@@ -273,24 +273,24 @@ class AgentStreamExecutor:
                             # 如果还是空，才使用 fallback
                             if not assistant_msg and not tool_calls:
                                 logger.warning(
-                                    f"[Agent] Still empty after explicit request"
+                                    "[Agent] Still empty after explicit request"
                                 )
                                 final_response = "抱歉，我暂时无法生成回复。请尝试换一种方式描述你的需求，或稍后再试。"
                                 logger.info(
-                                    f"Generated fallback response for empty LLM output"
+                                    "Generated fallback response for empty LLM output"
                                 )
                         else:
                             # 第一轮就空回复，直接 fallback
                             final_response = "抱歉，我暂时无法生成回复。请尝试换一种方式描述你的需求，或稍后再试。"
                             logger.info(
-                                f"Generated fallback response for empty LLM output"
+                                "Generated fallback response for empty LLM output"
                             )
                     else:
                         logger.info(
                             f"💭 {assistant_msg[:150]}{'...' if len(assistant_msg) > 150 else ''}"
                         )
 
-                    logger.debug(f"✅ 完成 (无工具调用)")
+                    logger.debug("✅ 完成 (无工具调用)")
                     self._emit_event(
                         "turn_end", {"turn": turn, "has_tool_calls": False}
                     )
@@ -349,7 +349,7 @@ class AgentStreamExecutor:
 
                         # Check for critical error - abort entire conversation
                         if result.get("status") == "critical_error":
-                            logger.error(f"💥 检测到严重错误，终止对话")
+                            logger.error("💥 检测到严重错误，终止对话")
                             final_response = result.get("result", "任务执行失败")
                             return final_response
 
@@ -488,7 +488,7 @@ class AgentStreamExecutor:
 
                 # Force model to summarize without tool calls
                 logger.info(
-                    f"[Agent] Requesting summary from LLM after reaching max steps..."
+                    "[Agent] Requesting summary from LLM after reaching max steps..."
                 )
 
                 # Remember position before injecting the prompt so we can remove it later
@@ -638,7 +638,7 @@ class AgentStreamExecutor:
                     status_code = chunk.get("status_code", "N/A")
 
                     # Log error with all available information
-                    logger.error(f"🔴 Stream API Error:")
+                    logger.error("🔴 Stream API Error:")
                     logger.error(f"   Message: {error_msg}")
                     logger.error(f"   Status Code: {status_code}")
                     logger.error(f"   Error Code: {error_code}")
@@ -685,10 +685,7 @@ class AgentStreamExecutor:
                     if finish_reason:
                         stop_reason = finish_reason
 
-                    # Skip reasoning_content (internal thinking from cowagent.models like GLM-5)
-                    reasoning_delta = delta.get("reasoning_content") or ""
-                    # if reasoning_delta:
-                    #     logger.debug(f"🧠 [thinking] {reasoning_delta[:100]}...")
+                    # Skip reasoning_content (internal thinking from cowagent models like GLM-5)
 
                     # Handle text content
                     content_delta = delta.get("content") or ""
@@ -1422,7 +1419,6 @@ class AgentStreamExecutor:
         system_tokens = self.agent._estimate_message_tokens(
             {"role": "system", "content": self.system_prompt}
         )
-        available_tokens = max_tokens - system_tokens
 
         # Calculate current tokens
         current_tokens = sum(self._estimate_turn_tokens(turn) for turn in turns)

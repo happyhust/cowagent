@@ -199,7 +199,7 @@ available_setting = {
     "Minimax_base_url": "",
     "web_port": 9899,
     "agent": True,  # 是否开启Agent模式
-    "agent_workspace": "~/cow",  # agent工作空间路径，用于存储skills、memory等
+    "agent_workspace": "~/.cowagent",  # agent工作空间路径，用于存储skills、memory等
     "agent_max_context_tokens": 50000,  # Agent模式下最大上下文tokens
     "agent_max_context_turns": 30,  # Agent模式下最大上下文记忆轮次
     "agent_max_steps": 15,  # Agent模式下单次运行最大决策步数
@@ -247,7 +247,7 @@ class Config(dict):
 
         try:
             return self[key]
-        except KeyError as e:
+        except KeyError:
             return default
         except Exception as e:
             raise e
@@ -263,7 +263,7 @@ class Config(dict):
             with open(os.path.join(get_appdata_dir(), "user_datas.pkl"), "rb") as f:
                 self.user_datas = pickle.load(f)
                 logger.debug("[Config] User datas loaded.")
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             logger.debug("[Config] User datas file not found, ignore.")
         except Exception as e:
             logger.warning("[Config] User datas error: {}".format(e))
@@ -369,7 +369,7 @@ def load_config():
 
     # Agent模式信息
     if config.get("agent", False):
-        workspace = config.get("agent_workspace", "~/cow")
+        workspace = config.get("agent_workspace", "~/.cowagent")
         logger.info("[INIT] Mode: Agent (workspace: {})".format(workspace))
     else:
         logger.info(

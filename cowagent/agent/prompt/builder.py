@@ -5,7 +5,6 @@ System Prompt Builder - 系统提示词构建器
 """
 
 from __future__ import annotations
-import os
 from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 
@@ -320,7 +319,7 @@ def _build_memory_section(
         "3. search 无结果 → 尝试用 `memory_get` 读取MEMORY.md及最近两天记忆文件",
         "",
         "**记忆文件结构**:",
-        f"- `MEMORY.md`: 长期记忆（核心信息、偏好、决策等）",
+        "- `MEMORY.md`: 长期记忆（核心信息、偏好、决策等）",
         f"- `memory/YYYY-MM-DD.md`: 每日记忆，今天是 `memory/{today_file}`",
         "",
         "### 写入记忆",
@@ -334,7 +333,7 @@ def _build_memory_section(
         "- 发现了用户经常遇到的问题或解决方案",
         "",
         "**存储规则**:",
-        f"- 长期有效的核心信息 → `MEMORY.md`（文件保持精简，< 2000 tokens）",
+        "- 长期有效的核心信息 → `MEMORY.md`（文件保持精简，< 2000 tokens）",
         f"- 当天的事件、进展、笔记 → `memory/{today_file}`",
         "- 追加内容 → `edit` 工具，oldText 留空",
         "- 修改内容 → `edit` 工具，oldText 填写要替换的文本",
@@ -389,16 +388,16 @@ def _build_workspace_section(workspace_dir: str, language: str) -> List[str]:
         "**路径使用规则** (非常重要):",
         "",
         f"1. **相对路径的基准目录**: 所有相对路径都是相对于 `{workspace_dir}` 而言的",
-        f"   - ✅ 正确: 访问工作空间内的文件用相对路径，如 `AGENT.md`",
+        "   - ✅ 正确: 访问工作空间内的文件用相对路径，如 `AGENT.md`",
         f"   - ❌ 错误: 用相对路径访问其他目录的文件 (如果它不在 `{workspace_dir}` 内)",
         "",
         "2. **访问其他目录**: 如果要访问工作空间之外的目录（如项目代码、系统文件），**必须使用绝对路径**",
-        f"   - ✅ 正确: 例如 `~/chatgpt-on-wechat`、`/usr/local/`",
-        f"   - ❌ 错误: 假设相对路径会指向其他目录",
+        "   - ✅ 正确: 例如 `~/chatgpt-on-wechat`、`/usr/local/`",
+        "   - ❌ 错误: 假设相对路径会指向其他目录",
         "",
         "3. **路径解析示例**:",
         f"   - 相对路径 `memory/` → 实际路径 `{workspace_dir}/memory/`",
-        f"   - 绝对路径 `~/chatgpt-on-wechat/docs/` → 实际路径 `~/chatgpt-on-wechat/docs/`",
+        "   - 绝对路径 `~/chatgpt-on-wechat/docs/` → 实际路径 `~/chatgpt-on-wechat/docs/`",
         "",
         "4. **不确定时**: 先用 `bash pwd` 确认当前目录，或用 `ls .` 查看当前位置",
         "",

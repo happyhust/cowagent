@@ -10,7 +10,7 @@ Handles memory persistence when conversation context is trimmed or overflows:
 """
 
 import threading
-from typing import Optional, Callable, Any, List, Dict
+from typing import Optional, Any, List, Dict
 from pathlib import Path
 from datetime import datetime
 from cowagent.common.log import logger
@@ -259,7 +259,7 @@ class MemoryFlushManager:
                 summary = self._call_llm_for_summary(conversation_text)
                 if summary and summary.strip() and summary.strip() != "无":
                     return summary.strip()
-                logger.info(f"[MemoryFlush] LLM returned empty or '无', using fallback")
+                logger.info("[MemoryFlush] LLM returned empty or '无', using fallback")
             except Exception as e:
                 logger.warning(
                     f"[MemoryFlush] LLM summarization failed, using fallback: {e}"

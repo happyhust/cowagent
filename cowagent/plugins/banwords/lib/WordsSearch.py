@@ -34,7 +34,7 @@ class TrieNode:
         return node
 
     def SetResults(self, index):
-        if self.End == False:
+        if not self.End:
             self.End = True
         self.Results.append(index)
 
@@ -55,9 +55,9 @@ class TrieNode2:
         self.m_values[c] = node3
 
     def SetResults(self, index):
-        if self.End == False:
+        if not self.End:
             self.End = True
-        if (index in self.Results) == False:
+        if index not in self.Results:
             self.Results.append(index)
 
     def HasKey(self, c):
@@ -113,9 +113,9 @@ class WordsSearch:
             nd.Index = i
             r = nd.Parent.Failure
             c = nd.Char
-            while r != None and (c in r.m_values) == False:
+            while r is not None and c not in r.m_values:
                 r = r.Failure
-            if r == None:
+            if r is None:
                 nd.Failure = root
             else:
                 nd.Failure = r.m_values[c]
@@ -144,7 +144,7 @@ class WordsSearch:
             oldNode = oldNode.Failure
             while oldNode != root:
                 for key in oldNode.m_values:
-                    if newNode.HasKey(key) == False:
+                    if not newNode.HasKey(key):
                         index = oldNode.m_values[key].Index
                         newNode.Add(key, allNode2[index])
                 for index in range(len(oldNode.Results)):
@@ -168,14 +168,14 @@ class WordsSearch:
         for index in range(len(text)):  # for (index = 0; index < text.length; index++)
             t = ord(text[index])  # text.charCodeAt(index)
             tn = None
-            if ptr == None:
+            if ptr is None:
                 tn = self._first.TryGetValue(t)
             else:
                 tn = ptr.TryGetValue(t)
-                if tn == None:
+                if tn is None:
                     tn = self._first.TryGetValue(t)
 
-            if tn != None:
+            if tn is not None:
                 if tn.End:
                     item = tn.Results[0]
                     keyword = self._keywords[item]
@@ -196,14 +196,14 @@ class WordsSearch:
         for index in range(len(text)):  # for (index = 0; index < text.length; index++)
             t = ord(text[index])  # text.charCodeAt(index)
             tn = None
-            if ptr == None:
+            if ptr is None:
                 tn = self._first.TryGetValue(t)
             else:
                 tn = ptr.TryGetValue(t)
-                if tn == None:
+                if tn is None:
                     tn = self._first.TryGetValue(t)
 
-            if tn != None:
+            if tn is not None:
                 if tn.End:
                     for j in range(
                         len(tn.Results)
@@ -227,14 +227,14 @@ class WordsSearch:
         for index in range(len(text)):  # for (index = 0; index < text.length; index++)
             t = ord(text[index])  # text.charCodeAt(index)
             tn = None
-            if ptr == None:
+            if ptr is None:
                 tn = self._first.TryGetValue(t)
             else:
                 tn = ptr.TryGetValue(t)
-                if tn == None:
+                if tn is None:
                     tn = self._first.TryGetValue(t)
 
-            if tn != None:
+            if tn is not None:
                 if tn.End:
                     return True
             ptr = tn
@@ -247,14 +247,14 @@ class WordsSearch:
         for i in range(len(text)):  # for (i = 0; i < text.length; i++)
             t = ord(text[i])  # text.charCodeAt(index)
             tn = None
-            if ptr == None:
+            if ptr is None:
                 tn = self._first.TryGetValue(t)
             else:
                 tn = ptr.TryGetValue(t)
-                if tn == None:
+                if tn is None:
                     tn = self._first.TryGetValue(t)
 
-            if tn != None:
+            if tn is not None:
                 if tn.End:
                     maxLength = len(self._keywords[tn.Results[0]])
                     start = i + 1 - maxLength

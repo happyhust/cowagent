@@ -9,7 +9,7 @@ from cowagent.channel import channel_factory
 from cowagent.common import const
 from cowagent.common.log import logger
 from cowagent.config import load_config, conf
-from cowagent.plugins import *
+from cowagent.plugins import PluginManager
 import threading
 
 

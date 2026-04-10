@@ -1,6 +1,6 @@
 import os
 import json
-from cowagent.config import pconf, plugin_config, conf, write_plugin_config
+from cowagent.config import pconf, plugin_config, write_plugin_config
 from cowagent.common.log import logger
 
 

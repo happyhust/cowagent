@@ -7,7 +7,7 @@ description: CowAgent long-term memory, task planning, skills system, CLI comman
 
 The memory system enables the Agent to remember important information over time. The Agent proactively stores information when users share preferences, decisions, or key facts, and automatically extracts summaries when conversations reach a certain length. Memory is divided into core memory and daily memory, with hybrid retrieval supporting both keyword search and vector search.
 
-On first launch, the Agent proactively asks the user for key information and records it in the workspace (default `~/cow`) — including agent settings, user identity, and memory files.
+On first launch, the Agent proactively asks the user for key information and records it in the workspace (default `~/.cowagent`) — including agent settings, user identity, and memory files.
 
 In subsequent long-term conversations, the Agent intelligently stores or retrieves memory as needed, continuously updating its own settings, user preferences, and memory files, summarizing experiences and lessons learned — truly achieving autonomous thinking and continuous growth.
 
@@ -67,7 +67,7 @@ The Skills system provides infinite extensibility for the Agent. Each Skill cons
 
 - **[Skill Hub](https://skills.cowagent.ai/):** An open skill marketplace featuring official, community, and third-party skills. Install with one command.
 - **Built-in skills:** Located in the project's `skills/` directory, including skill creator, image recognition, LinkAI agent, web fetch, and more. Built-in skills are automatically enabled based on dependency conditions (API keys, system commands, etc.).
-- **Custom skills:** Created by users through conversation, stored in the workspace (`~/cow/skills/`), capable of implementing any complex business process or third-party integration.
+- **Custom skills:** Created by users through conversation, stored in the workspace (`~/.cowagent/skills/`), capable of implementing any complex business process or third-party integration.
 
 Install skills: `/skill install <name>` or `cow skill install <name>`, supporting Skill Hub, GitHub, ClawHub, URL, and more.
 

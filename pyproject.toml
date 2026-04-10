@@ -17,3 +17,17 @@ cow = "cowagent.cli.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["cowagent*"]
+
+[tool.ruff]
+exclude = [
+    "cowagent/channel/wechatmp/",
+    "cowagent/channel/wechat/",
+    "cowagent/channel/wework/",
+]
+
+[tool.ruff.lint]
+ignore = [
+    "F403",  # star imports
+    "F405",  # undefined from star imports
+    "F811",  # redefinition
+]

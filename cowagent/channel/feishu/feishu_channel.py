@@ -133,7 +133,6 @@ class FeiShuChanel(ChatChannel):
         import ctypes
 
         logger.info("[FeiShu] stop() called")
-        ws_client = self._ws_client
         self._ws_client = None
         ws_thread = self._ws_thread
         self._ws_thread = None
@@ -538,7 +537,7 @@ class FeiShuChanel(ChatChannel):
             )
         res = res.json()
         if res.get("code") == 0:
-            logger.info(f"[FeiShu] send message success")
+            logger.info("[FeiShu] send message success")
         else:
             logger.error(
                 f"[FeiShu] send message failed, code={res.get('code')}, msg={res.get('msg')}"

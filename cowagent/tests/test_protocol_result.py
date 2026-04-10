@@ -1,6 +1,6 @@
 """Tests for cowagent.agent.protocol.result."""
 
-from cowagent.agent.protocol.result import AgentResult, AgentActionType, ToolResult
+from cowagent.agent.protocol.result import AgentResult, ToolResult
 
 
 class TestAgentResult:

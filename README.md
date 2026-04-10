@@ -198,7 +198,7 @@ cow install-browser
   "voice_reply_voice": false,                                 # 是否使用语音回复语音
   "use_linkai": false,                                        # 是否使用 LinkAI 接口，默认关闭，设置为 true 后可对接 LinkAI 平台模型
   "agent": true,                                              # 是否启用 Agent 模式，启用后拥有多轮工具决策、长期记忆、Skills 能力等
-  "agent_workspace": "~/cow",                                 # Agent 的工作空间路径，用于存储 memory、skills、系统设定等
+  "agent_workspace": "~/.cowagent",                                 # Agent 的工作空间路径，用于存储 memory、skills、系统设定等
   "agent_max_context_tokens": 40000,                          # Agent 模式下最大上下文 tokens，超出将自动丢弃最早的上下文
   "agent_max_context_turns": 30,                              # Agent 模式下最大上下文记忆轮次，每轮包括一次用户提问和 AI 回复
   "agent_max_steps": 15                                       # Agent 模式下单次任务的最大决策步数，超出后将停止继续调用工具

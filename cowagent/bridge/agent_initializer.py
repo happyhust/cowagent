@@ -47,7 +47,7 @@ class AgentInitializer:
         from cowagent.config import conf
 
         # Get workspace from config
-        workspace_root = expand_path(conf().get("agent_workspace", "~/cow"))
+        workspace_root = expand_path(conf().get("agent_workspace", "~/.cowagent"))
 
         # Migrate API keys
         self._migrate_config_to_env(workspace_root)
@@ -62,7 +62,7 @@ class AgentInitializer:
             PromptBuilder,
         )
 
-        workspace_files = ensure_workspace(workspace_root, create_templates=True)
+        ensure_workspace(workspace_root, create_templates=True)
 
         if session_id is None:
             logger.info(

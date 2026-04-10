@@ -76,7 +76,7 @@ def _check(func):
         self.receivedMsgs[msgId] = True
         create_time = cmsg.create_time  # 消息时间戳
         if (
-            conf().get("hot_reload") == True
+            conf().get("hot_reload")
             and int(create_time) < int(time.time()) - 60
         ):  # 跳过1分钟前的历史消息
             logger.debug("[DingTalk] History message {} skipped".format(msgId))
@@ -438,7 +438,7 @@ class DingTalkChanel(ChatChannel, dingtalk_stream.ChatbotHandler):
 
                 # 保存到临时文件
                 file_name = os.path.basename(file_path) or f"media_{uuid.uuid4()}"
-                workspace_root = expand_path(conf().get("agent_workspace", "~/cow"))
+                workspace_root = expand_path(conf().get("agent_workspace", "~/.cowagent"))
                 tmp_dir = os.path.join(workspace_root, "tmp")
                 os.makedirs(tmp_dir, exist_ok=True)
                 temp_file = os.path.join(tmp_dir, file_name)
@@ -523,7 +523,6 @@ class DingTalkChanel(ChatChannel, dingtalk_stream.ChatbotHandler):
 
         try:
             response = requests.post(url=url, headers=headers, json=body, timeout=10)
-            result = response.json()
 
             logger.info(f"[DingTalk] Image send result: {response.text}")
 
@@ -592,7 +591,7 @@ class DingTalkChanel(ChatChannel, dingtalk_stream.ChatbotHandler):
             result = response.json()
 
             if response.status_code == 200:
-                logger.info(f"[DingTalk] Image message sent successfully")
+                logger.info("[DingTalk] Image message sent successfully")
                 return True
             else:
                 logger.error(f"[DingTalk] Failed to send image message: {result}")
@@ -809,7 +808,7 @@ class DingTalkChanel(ChatChannel, dingtalk_stream.ChatbotHandler):
 
             if not robot_code:
                 logger.error(
-                    f"[DingTalk] Cannot send scheduled task: robot_code not available. Please send at least one message to the bot first, or configure dingtalk_robot_code in config.json"
+                    "[DingTalk] Cannot send scheduled task: robot_code not available. Please send at least one message to the bot first, or configure dingtalk_robot_code in config.json"
                 )
                 return
 
@@ -821,7 +820,7 @@ class DingTalkChanel(ChatChannel, dingtalk_stream.ChatbotHandler):
                 sender_staff_id = context.get("dingtalk_sender_staff_id")
                 if not sender_staff_id:
                     logger.error(
-                        f"[DingTalk] Cannot send single chat scheduled message: sender_staff_id not available in context"
+                        "[DingTalk] Cannot send single chat scheduled message: sender_staff_id not available in context"
                     )
                     return
 
@@ -833,7 +832,7 @@ class DingTalkChanel(ChatChannel, dingtalk_stream.ChatbotHandler):
                 )
 
             if not success:
-                logger.error(f"[DingTalk] Failed to send scheduled task message")
+                logger.error("[DingTalk] Failed to send scheduled task message")
             return
 
         # 从正常消息中提取并缓存 robot_code
@@ -1032,7 +1031,6 @@ class DingTalkChanel(ChatChannel, dingtalk_stream.ChatbotHandler):
 
         try:
             response = requests.post(url=url, headers=headers, json=body, timeout=10)
-            result = response.json()
 
             logger.info(f"[DingTalk] File send result: {response.text}")
 

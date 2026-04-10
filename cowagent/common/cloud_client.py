@@ -73,7 +73,7 @@ class CloudClient(LinkAIClient):
                 from cowagent.config import conf
                 from cowagent.common.utils import expand_path
 
-                workspace_root = expand_path(conf().get("agent_workspace", "~/cow"))
+                workspace_root = expand_path(conf().get("agent_workspace", "~/.cowagent"))
                 manager = SkillManager(
                     custom_dir=os.path.join(workspace_root, "skills")
                 )
@@ -92,7 +92,7 @@ class CloudClient(LinkAIClient):
                 from cowagent.config import conf
                 from cowagent.common.utils import expand_path
 
-                workspace_root = expand_path(conf().get("agent_workspace", "~/cow"))
+                workspace_root = expand_path(conf().get("agent_workspace", "~/.cowagent"))
                 self._memory_service = MemoryService(workspace_root)
                 logger.debug("[CloudClient] MemoryService initialised")
             except Exception as e:

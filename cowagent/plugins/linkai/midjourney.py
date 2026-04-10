@@ -156,7 +156,7 @@ class MJBot:
                 "Midjourney绘画未开启，请查看 plugins/linkai/config.json 中的配置，或者在LinkAI平台 应用中添加/打开”MJ“插件"
             )
             self._set_reply_text(
-                f"Midjourney绘画未开启", e_context, level=ReplyType.INFO
+                "Midjourney绘画未开启", e_context, level=ReplyType.INFO
             )
             return
 
@@ -213,7 +213,7 @@ class MJBot:
             e_context["reply"] = reply
             e_context.action = EventAction.BREAK_PASS
         else:
-            self._set_reply_text(f"暂不支持该命令", e_context)
+            self._set_reply_text("暂不支持该命令", e_context)
 
     def generate(self, prompt: str, user_id: str, e_context: EventContext) -> Reply:
         """
@@ -408,7 +408,7 @@ class MJBot:
             or task.task_type == TaskType.VARIATION
             or task.task_type == TaskType.RESET
         ):
-            text = f"🎨绘画完成!\n"
+            text = "🎨绘画完成!\n"
             if task.raw_prompt:
                 text += f"prompt: {task.raw_prompt}\n"
             text += f"- - - - - - - - -\n图片ID: {task.img_id}"

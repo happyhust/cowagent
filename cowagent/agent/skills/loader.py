@@ -3,14 +3,12 @@ Skill loader for discovering and loading skills from directories.
 """
 
 import os
-from pathlib import Path
-from typing import List, Optional, Dict
+from typing import Optional, Dict
 from cowagent.common.log import logger
 from cowagent.agent.skills.types import (
     Skill,
     SkillEntry,
     LoadSkillsResult,
-    SkillMetadata,
 )
 from cowagent.agent.skills.frontmatter import (
     parse_frontmatter,
@@ -209,7 +207,7 @@ class SkillLoader:
         config_path = os.path.join(skill_dir, "config.json")
 
         if not os.path.exists(config_path):
-            logger.debug(f"[SkillLoader] linkai-agent skipped: no config.json found")
+            logger.debug("[SkillLoader] linkai-agent skipped: no config.json found")
             return ""
 
         try:

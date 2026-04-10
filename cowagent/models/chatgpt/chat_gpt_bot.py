@@ -1,11 +1,9 @@
 # encoding:utf-8
 
 import time
-import json
 
 import openai
 from cowagent.models.openai.openai_compat import (
-    error as openai_error,
     RateLimitError,
     Timeout,
     APIError,

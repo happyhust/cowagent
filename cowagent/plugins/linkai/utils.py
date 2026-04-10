@@ -54,5 +54,5 @@ class Util:
             else:
                 logger.warning(f"[LinkAI] find app info exception, res={res}")
                 return False
-        except Exception as e:
+        except Exception:
             return False

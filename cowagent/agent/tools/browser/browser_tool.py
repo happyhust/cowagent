@@ -170,7 +170,7 @@ class BrowserTool(BaseTool):
         if "error" in result:
             return ToolResult.fail(result["error"])
         return ToolResult.success(
-            f"Clicked successfully. Use 'snapshot' to see updated page."
+            "Clicked successfully. Use 'snapshot' to see updated page."
         )
 
     def _do_fill(self, args: Dict[str, Any]) -> ToolResult:
@@ -186,7 +186,7 @@ class BrowserTool(BaseTool):
         if "error" in result:
             return ToolResult.fail(result["error"])
         return ToolResult.success(
-            f"Filled text into element. Use 'snapshot' to verify."
+            "Filled text into element. Use 'snapshot' to verify."
         )
 
     def _do_select(self, args: Dict[str, Any]) -> ToolResult:
@@ -225,7 +225,7 @@ class BrowserTool(BaseTool):
         result = self._get_service().wait(selector=selector, timeout=timeout)
         if "error" in result:
             return ToolResult.fail(result["error"])
-        return ToolResult.success(f"Wait completed.")
+        return ToolResult.success("Wait completed.")
 
     def _do_back(self, args: Dict[str, Any]) -> ToolResult:
         result = self._get_service().go_back()

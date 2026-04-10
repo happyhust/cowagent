@@ -72,9 +72,7 @@ class TestContext:
         assert c.content == "updated"
 
     def test_delitem(self):
-        c = Context(
-            type=ContextType.TEXT, content="hi", kwargs={"extra": "val"}
-        )
+        c = Context(type=ContextType.TEXT, content="hi", kwargs={"extra": "val"})
         del c["extra"]
         assert "extra" not in c.kwargs
 

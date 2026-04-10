@@ -8,7 +8,7 @@ import os
 from typing import List, Optional, Dict, Any
 from pathlib import Path
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from cowagent.agent.memory.config import MemoryConfig, get_default_memory_config
 from cowagent.agent.memory.storage import MemoryStorage, MemoryChunk, SearchResult
@@ -102,7 +102,7 @@ class MemoryManager:
                 from cowagent.common.log import logger
 
                 logger.info(
-                    f"[MemoryManager] Memory will work with keyword search only (no vector search)"
+                    "[MemoryManager] Memory will work with keyword search only (no vector search)"
                 )
 
         # Initialize memory flush manager

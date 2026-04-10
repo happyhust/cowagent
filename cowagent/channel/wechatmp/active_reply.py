@@ -1,4 +1,3 @@
-import time
 
 import web
 from wechatpy import parse_message
@@ -25,7 +24,8 @@ class Query:
             verify_server(args)
             channel = WechatMPChannel()
             message = web.data()
-            encrypt_func = lambda x: x
+            def encrypt_func(x):
+                return x
             if args.get("encrypt_type") == "aes":
                 logger.debug(
                     "[wechatmp] Receive encrypted post data:\n"
@@ -38,9 +38,10 @@ class Query:
                 message = channel.crypto.decrypt_message(
                     message, args.msg_signature, args.timestamp, args.nonce
                 )
-                encrypt_func = lambda x: channel.crypto.encrypt_message(
-                    x, args.nonce, args.timestamp
-                )
+                def encrypt_func(x):
+                    return channel.crypto.encrypt_message(
+                                    x, args.nonce, args.timestamp
+                                )
             else:
                 logger.debug(
                     "[wechatmp] Receive post data:\n" + message.decode("utf-8")

@@ -6,7 +6,7 @@ Workspace Management - 工作空间管理模块
 
 from __future__ import annotations
 import os
-from typing import List, Optional, Dict
+from typing import List, Optional
 from dataclasses import dataclass
 
 from cowagent.common.log import logger

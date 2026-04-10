@@ -7,7 +7,6 @@ import os
 import threading
 from datetime import datetime
 from typing import Dict, List, Optional
-from pathlib import Path
 from cowagent.common.utils import expand_path
 
 
@@ -21,12 +20,12 @@ class TaskStore:
         Initialize task store
 
         Args:
-            store_path: Path to tasks.json file. Defaults to ~/cow/scheduler/tasks.json
+            store_path: Path to tasks.json file. Defaults to ~/.cowagent/scheduler/tasks.json
         """
         if store_path is None:
-            # Default to ~/cow/scheduler/tasks.json
+            # Default to ~/.cowagent/scheduler/tasks.json
             home = expand_path("~")
-            store_path = os.path.join(home, "cow", "scheduler", "tasks.json")
+            store_path = os.path.join(home, ".cowagent", "scheduler", "tasks.json")
 
         self.store_path = store_path
         self.lock = threading.Lock()

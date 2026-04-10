@@ -1,7 +1,6 @@
 import os
 import pathlib
 
-from cowagent.config import conf
 
 
 class TmpDir(object):

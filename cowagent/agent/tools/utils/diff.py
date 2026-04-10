@@ -5,7 +5,7 @@ Provides fuzzy matching and diff generation functionality
 
 import difflib
 import re
-from typing import Optional, Tuple
+from typing import Tuple
 
 
 def strip_bom(text: str) -> Tuple[str, str]:

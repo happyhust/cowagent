@@ -1,12 +1,11 @@
 # -*- coding=utf-8 -*-
 import io
 import os
-import sys
 import time
 
 import requests
 import web
-from wechatpy.enterprise import create_reply, parse_message
+from wechatpy.enterprise import parse_message
 from wechatpy.enterprise.crypto import WeChatCrypto
 from wechatpy.enterprise.exceptions import InvalidCorpIdException
 from wechatpy.exceptions import InvalidSignatureException, WeChatClientException
@@ -25,7 +24,7 @@ from cowagent.common.utils import (
     convert_webp_to_png,
     remove_markdown_symbol,
 )
-from cowagent.config import conf, subscribe_msg
+from cowagent.config import conf
 from cowagent.voice.audio_convert import any_to_amr, split_audio
 
 MAX_UTF8_LEN = 2048

@@ -5,7 +5,6 @@ Provides global memory configuration with simplified workspace structure
 """
 
 from __future__ import annotations
-import os
 from dataclasses import dataclass, field
 from typing import Optional, List
 from pathlib import Path
@@ -15,14 +14,14 @@ def _default_workspace():
     """Get default workspace path with proper Windows support"""
     from cowagent.common.utils import expand_path
 
-    return expand_path("~/cow")
+    return expand_path("~/.cowagent")
 
 
 @dataclass
 class MemoryConfig:
     """Configuration for memory storage and search"""
 
-    # Storage paths (default: ~/cow)
+    # Storage paths (default: ~/.cowagent)
     workspace_root: str = field(default_factory=_default_workspace)
 
     # Embedding config

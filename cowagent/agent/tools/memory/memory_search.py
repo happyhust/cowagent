@@ -4,7 +4,7 @@ Memory search tool
 Allows agents to search their memory using semantic and keyword search
 """
 
-from typing import Dict, Any, Optional
+from typing import Optional
 from cowagent.agent.tools.base_tool import BaseTool
 
 

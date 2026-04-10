@@ -11,8 +11,7 @@ Memory file layout (under workspace_root):
 
 import os
 from datetime import datetime
-from typing import Dict, List, Optional
-from pathlib import Path
+from typing import List, Optional
 from cowagent.common.log import logger
 
 
@@ -24,7 +23,7 @@ class MemoryService:
 
     def __init__(self, workspace_root: str):
         """
-        :param workspace_root: Workspace root directory (e.g. ~/cow)
+        :param workspace_root: Workspace root directory (e.g. ~/.cowagent)
         """
         self.workspace_root = workspace_root
         self.memory_dir = os.path.join(workspace_root, "memory")
@@ -154,7 +153,7 @@ class MemoryService:
                     "payload": None,
                 }
 
-        except ValueError as e:
+        except ValueError:
             return {
                 "action": action,
                 "code": 403,
@@ -189,7 +188,7 @@ class MemoryService:
         allowed = os.path.realpath(base_dir)
 
         if resolved != allowed and not resolved.startswith(allowed + os.sep):
-            raise ValueError(f"Invalid filename: path traversal detected")
+            raise ValueError("Invalid filename: path traversal detected")
 
         return resolved
 

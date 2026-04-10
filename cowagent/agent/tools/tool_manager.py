@@ -1,7 +1,6 @@
 import importlib
 import importlib.util
 from pathlib import Path
-from typing import Dict, Any, Type
 from cowagent.agent.tools.base_tool import BaseTool
 from cowagent.common.log import logger
 from cowagent.config import conf
@@ -94,10 +93,10 @@ class ToolManager:
                                     error_msg = str(e)
                                     if "playwright" in error_msg:
                                         logger.warning(
-                                            f"[ToolManager] Browser tool not loaded - missing dependencies.\n"
-                                            f"  To enable browser tool, run:\n"
-                                            f"    pip install playwright\n"
-                                            f"    playwright install chromium"
+                                            "[ToolManager] Browser tool not loaded - missing dependencies.\n"
+                                            "  To enable browser tool, run:\n"
+                                            "    pip install playwright\n"
+                                            "    playwright install chromium"
                                         )
                                     elif "markdownify" in error_msg:
                                         logger.warning(
@@ -170,10 +169,10 @@ class ToolManager:
                                 error_msg = str(e)
                                 if "playwright" in error_msg:
                                     logger.warning(
-                                        f"[ToolManager] Browser tool not loaded - missing dependencies.\n"
-                                        f"  To enable browser tool, run:\n"
-                                        f"    pip install playwright\n"
-                                        f"    playwright install chromium"
+                                        "[ToolManager] Browser tool not loaded - missing dependencies.\n"
+                                        "  To enable browser tool, run:\n"
+                                        "    pip install playwright\n"
+                                        "    playwright install chromium"
                                     )
                                 elif "markdownify" in error_msg:
                                     logger.warning(
@@ -213,16 +212,16 @@ class ToolManager:
                 for tool_name in missing_tools:
                     if tool_name == "browser":
                         logger.warning(
-                            f"[ToolManager] Browser tool is configured but not loaded.\n"
-                            f"  To enable browser tool, run:\n"
-                            f"    pip install playwright\n"
-                            f"    playwright install chromium"
+                            "[ToolManager] Browser tool is configured but not loaded.\n"
+                            "  To enable browser tool, run:\n"
+                            "    pip install playwright\n"
+                            "    playwright install chromium"
                         )
                     elif tool_name == "google_search":
                         logger.warning(
-                            f"[ToolManager] Google Search tool is configured but may need API key.\n"
-                            f"  Get API key from: https://serper.dev\n"
-                            f"  Configure in config.json: tools.google_search.api_key"
+                            "[ToolManager] Google Search tool is configured but may need API key.\n"
+                            "  Get API key from: https://serper.dev\n"
+                            "  Configure in config.json: tools.google_search.api_key"
                         )
                     else:
                         logger.warning(

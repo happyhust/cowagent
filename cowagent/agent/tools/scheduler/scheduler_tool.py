@@ -4,12 +4,11 @@ Scheduler tool for creating and managing scheduled tasks
 
 import uuid
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Optional
 from croniter import croniter
 
 from cowagent.agent.tools.base_tool import BaseTool, ToolResult
-from cowagent.bridge.context import Context, ContextType
-from cowagent.bridge.reply import Reply, ReplyType
+from cowagent.bridge.context import Context
 from cowagent.common.log import logger
 
 

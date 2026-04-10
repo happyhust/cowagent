@@ -245,7 +245,7 @@ class OpenAICompatibleBot:
                         tool_call_id = block.get("tool_use_id") or ""
                         if not tool_call_id:
                             logger.warning(
-                                f"[OpenAICompatible] tool_result missing tool_use_id, using empty string"
+                                "[OpenAICompatible] tool_result missing tool_use_id, using empty string"
                             )
                         # Ensure content is a string (some providers require string content)
                         result_content = block.get("content", "")

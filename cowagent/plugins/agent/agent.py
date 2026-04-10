@@ -7,8 +7,7 @@ from agentmesh.models import ClaudeModel
 from agentmesh.tools import ToolManager
 from cowagent.config import conf
 
-import cowagent.plugins
-from cowagent.plugins import Plugin, Event, EventContext, EventAction
+from cowagent.plugins import Plugin, Event, EventContext, EventAction, instance as plugins
 from cowagent.bridge.context import ContextType
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common.log import logger
@@ -64,7 +63,7 @@ class AgentPlugin(Plugin):
             f"{trigger_prefix}agent use [team_name] [task] - 使用特定团队执行任务\n\n"
         )
         help_text += f"可用团队: \n{teams_str}\n\n"
-        help_text += f"示例:\n"
+        help_text += "示例:\n"
         help_text += f"{trigger_prefix}agent 帮我查看当前文件夹路径\n"
         help_text += (
             f"{trigger_prefix}agent use software_team 帮我写一个产品预约体验的表单页面"

@@ -16,10 +16,8 @@ Does NOT match:
 """
 
 import os
-import threading
 
-import cowagent.plugins
-from cowagent.plugins import Plugin, Event, EventContext, EventAction
+from cowagent.plugins import Plugin, Event, EventContext, EventAction, instance as plugins
 from cowagent.bridge.context import ContextType
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common.log import logger
@@ -217,7 +215,7 @@ class CowCliPlugin(Plugin):
                 lines.append(f"  已加载技能: {enabled}/{total}")
         else:
             lines.append("")
-            lines.append(f"  Agent: 未初始化 (首次对话后自动创建)")
+            lines.append("  Agent: 未初始化 (首次对话后自动创建)")
 
         return "\n".join(lines)
 
@@ -335,8 +333,6 @@ class CowCliPlugin(Plugin):
     _CONFIG_READABLE = _CONFIG_WRITABLE | {"channel_type"}
 
     def _cmd_config(self, args: str, e_context, **_) -> str:
-        from cowagent.config import conf, load_config
-        import json as _json
 
         parts = args.strip().split(None, 1)
         if not parts:
