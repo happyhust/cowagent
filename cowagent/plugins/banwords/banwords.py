@@ -49,7 +49,7 @@ class Banwords(Plugin):
                 words = []
                 for line in f:
                     word = line.strip()
-                    if word:
+                    if word and not word.startswith("#"):
                         words.append(word)
             self.searchr.SetKeywords(words)
             self.handlers[Event.ON_HANDLE_CONTEXT] = self.on_handle_context
@@ -76,6 +76,11 @@ class Banwords(Plugin):
             f = self.searchr.FindFirst(content)
             if f:
                 logger.info("[Banwords] %s in message" % f["Keyword"])
+                reply = Reply(
+                    ReplyType.INFO,
+                    "问题触犯了违禁关键词，自动忽视",
+                )
+                e_context["reply"] = reply
                 e_context.action = EventAction.BREAK_PASS
                 return
         elif self.action == "replace":
@@ -98,7 +103,10 @@ class Banwords(Plugin):
             f = self.searchr.FindFirst(content)
             if f:
                 logger.info("[Banwords] %s in reply" % f["Keyword"])
-                e_context["reply"] = None
+                e_context["reply"] = Reply(
+                    ReplyType.INFO,
+                    "回复触发了违禁关键词，已自动过滤",
+                )
                 e_context.action = EventAction.BREAK_PASS
                 return
         elif self.reply_action == "replace":

@@ -87,10 +87,11 @@ class EnvConfig(BaseTool):
             logger.info(f"[EnvConfig] Created .env file at {self.env_path}")
 
     def _mask_value(self, value: str) -> str:
-        """Mask sensitive parts of a value for logging"""
-        if not value or len(value) <= 10:
+        """Mask sensitive parts of a value for display to users."""
+        if not value:
             return "***"
-        return f"{value[:6]}***{value[-4:]}"
+        # Never expose any portion of the actual value, not even prefix/suffix.
+        return "***"
 
     def _read_env_file(self) -> Dict[str, str]:
         """Read all key-value pairs from .env file"""
