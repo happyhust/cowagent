@@ -270,7 +270,6 @@ if [ -f "${BASE_DIR}/config.json" ]; then
 fi
 
 check_python_version
-install_dependencies
 select_model
 configure_model
 select_channel

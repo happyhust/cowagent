@@ -2,7 +2,7 @@
 # Check CowAgent service status
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 BASE_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
-PID_FILE="${BASE_DIR}/cowagent.pid"
+PID_FILE="${BASE_DIR}/.cowagent.pid"
 
 source "$SCRIPT_DIR/shared.sh"
 

@@ -1,48 +1,55 @@
-.DS_Store
-.idea
-.vscode
-.venv
-.vs
+# Python
 __pycache__/
-venv*
-*.pyc
-python
-config.json
-QR.png
-nohup.out
-tmp
-plugins.json
-*.log
-logs/
-workspace
-config.yaml
-user_datas.pkl
-chatgpt_tool_hub/
-plugins/**/
-!plugins/bdunit
-!plugins/dungeon
-!plugins/finish
-!plugins/godcmd
-!plugins/tool
-!plugins/banwords
-!plugins/banwords/**/
-plugins/banwords/__pycache__
-plugins/banwords/lib/__pycache__
-!plugins/hello
-!plugins/role
-!plugins/keyword
-!plugins/linkai
-!plugins/agent
-!plugins/cow_cli
-client_config.json
-ref/
-**/.dev.vars
-.cursor/
-local/
-node_modules/
-
-# cow cli
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
 dist/
 build/
-*.egg-info/
+*.manifest
+*.spec
+
+# Virtual environments
+.venv/
+venv/
+venv.bak/
+
+# IDE
+.idea/
+.vscode/
+.vs/
+*.swp
+*.swo
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config (contains secrets)
+config.json
+config.yaml
+client_config.json
+**/.dev.vars
+
+# Runtime artifacts
+*.log
+logs/
+nohup.out
+run.log
+.cowagent.pid
 .cow.pid
+tmp/
+local/
+
+# Generated files
+QR.png
+workspace/
+user_datas.pkl
+
+# Node
+node_modules/
+
+# Ref / misc
+ref/

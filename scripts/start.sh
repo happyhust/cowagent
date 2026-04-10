@@ -15,8 +15,8 @@ start_project() {
     mkdir -p "$LOG_DIR"
 
     nohup $PYTHON_CMD -m cowagent >> "${LOG_FILE}" 2>&1 &
-    echo $! > "${BASE_DIR}/cowagent.pid"
-    echo -e "${GREEN}${EMOJI_COW} CowAgent started (PID=$(cat "${BASE_DIR}/cowagent.pid"))${NC}"
+    echo $! > "${BASE_DIR}/.cowagent.pid"
+    echo -e "${GREEN}${EMOJI_COW} CowAgent started (PID=$(cat "${BASE_DIR}/.cowagent.pid"))${NC}"
     echo -e "${GREEN}Log: ${LOG_FILE}${NC}"
 
     sleep 2

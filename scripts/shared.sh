@@ -158,7 +158,7 @@ has_cow() {
 
 # Get PID of running process
 get_pid() {
-    local PID_FILE="${BASE_DIR}/cowagent.pid"
+    local PID_FILE="${BASE_DIR}/.cowagent.pid"
     if [ -f "$PID_FILE" ]; then
         local pid
         pid=$(cat "$PID_FILE")
