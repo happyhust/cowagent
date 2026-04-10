@@ -6,6 +6,8 @@ import os
 from cowagent.bridge.context import ContextType
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common.log import logger
+from cowagent.common.utils import expand_path
+from cowagent.config import conf as get_conf
 from cowagent.plugins import *
 
 from .lib.WordsSearch import WordsSearch
@@ -36,7 +38,13 @@ class Banwords(Plugin):
 
             self.searchr = WordsSearch()
             self.action = conf["action"]
-            banwords_path = os.path.join(curdir, "banwords.txt")
+            # 优先从 workspace plugins 目录加载，支持用户自定义配置
+            workspace = expand_path(get_conf().get("agent_workspace", "~/.cowagent"))
+            ws_banwords = os.path.join(workspace, "plugins", "banwords", "banwords.txt")
+            if os.path.exists(ws_banwords):
+                banwords_path = ws_banwords
+            else:
+                banwords_path = os.path.join(curdir, "banwords.txt")
             with open(banwords_path, "r", encoding="utf-8") as f:
                 words = []
                 for line in f:
