@@ -1,16 +1,38 @@
 import os
+import sys
 import yaml
 from typing import Dict, List, Optional
 
-from agentmesh import AgentTeam, Agent, LLMModel
-from agentmesh.models import ClaudeModel
-from agentmesh.tools import ToolManager
 from cowagent.config import conf
 
 from cowagent.plugins import Plugin, Event, EventContext, EventAction, instance as plugins
 from cowagent.bridge.context import ContextType
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common.log import logger
+
+# Prevent duplicate warnings when module is imported multiple times
+_AGENTMESH_WARNED = False
+
+try:
+    from agentmesh.protocol.team import AgentTeam
+    from agentmesh.protocol.agent import Agent
+    from agentmesh.models.llm.base_model import LLMModel
+    from agentmesh.models.llm.claude_model import ClaudeModel
+    from agentmesh.tools import ToolManager
+
+    AGENTMESH_AVAILABLE = True
+except ImportError:
+    AgentTeam = Agent = LLMModel = ClaudeModel = ToolManager = None  # type: ignore
+    AGENTMESH_AVAILABLE = False
+    if not _AGENTMESH_WARNED:
+        _AGENTMESH_WARNED = True
+        logger.warning(
+            "[agent] agentmesh-sdk not available, agent plugin will be disabled. "
+            "Install with: pip install agentmesh-sdk>=0.1.3"
+        )
+
+
+_PLUGIN_WARNED = False
 
 
 @plugins.register(
@@ -30,6 +52,16 @@ class AgentPlugin(Plugin):
         self.description = (
             "Use AgentMesh framework to process tasks with multi-agent teams"
         )
+
+        if not AGENTMESH_AVAILABLE:
+            global _PLUGIN_WARNED
+            if not _PLUGIN_WARNED:
+                _PLUGIN_WARNED = True
+                logger.warning("[agent] agentmesh plugin is disabled due to missing dependency")
+            self.config = {}
+            self.tool_manager = None
+            return
+
         self.config = self._load_config()
         self.tool_manager = ToolManager()
         self.tool_manager.load_tools(config_dict=self.config.get("tools"))
@@ -160,6 +192,14 @@ class AgentPlugin(Plugin):
             e_context.action = EventAction.CONTINUE
             return
 
+        if not AGENTMESH_AVAILABLE:
+            reply = Reply()
+            reply.type = ReplyType.ERROR
+            reply.content = "agent 插件依赖 agentmesh-sdk，请先安装: pip install agentmesh-sdk>=0.1.3"
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+
         if not self.config:
             reply = Reply()
             reply.type = ReplyType.ERROR
@@ -215,7 +255,7 @@ class AgentPlugin(Plugin):
 
         # If no team specified, use default or first available
         if not team_name:
-            teams = self.configself.get_available_teams()
+            teams = self.get_available_teams()
             if not teams:
                 reply = Reply()
                 reply.type = ReplyType.TEXT

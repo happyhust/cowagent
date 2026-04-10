@@ -616,6 +616,14 @@ class AgentStreamExecutor:
         gemini_raw_parts = None  # Preserve Gemini thoughtSignature for round-trip
         stop_reason = None  # Track why the stream stopped
 
+        # Log request details at DEBUG level for troubleshooting
+        tool_names = [t.name for t in self.tools.values()] if self.tools else []
+        logger.debug(
+            f"[LLM Request] model={self.model.model} | "
+            f"messages={len(messages)} | tools={tool_names} | "
+            f"system_prompt_len={len(self.system_prompt)}"
+        )
+
         try:
             stream = self.model.call_stream(request)
 
@@ -638,12 +646,12 @@ class AgentStreamExecutor:
                     status_code = chunk.get("status_code", "N/A")
 
                     # Log error with all available information
-                    logger.error("🔴 Stream API Error:")
-                    logger.error(f"   Message: {error_msg}")
-                    logger.error(f"   Status Code: {status_code}")
-                    logger.error(f"   Error Code: {error_code}")
-                    logger.error(f"   Error Type: {error_type}")
-                    logger.error(f"   Full chunk: {chunk}")
+                    logger.error(
+                        f"🔴 Stream API Error | model={self.model.model} | "
+                        f"Message: {error_msg} | Status: {status_code} | "
+                        f"Code: {error_code} | Type: {error_type}"
+                    )
+                    logger.debug(f"   Full chunk: {chunk}")
 
                     # Check if this is a context overflow error (keyword-based, works for all models)
                     # Don't rely on specific status codes as different providers use different codes
@@ -731,6 +739,30 @@ class AgentStreamExecutor:
         except Exception as e:
             error_str = str(e)
             error_str_lower = error_str.lower()
+
+            # Log detailed request context for debugging
+            msg_count = len(messages)
+            tool_count = len(tools_schema) if tools_schema else 0
+            total_chars = sum(
+                len(str(m.get("content", ""))) for m in messages
+            )
+            logger.error(
+                f"❌ LLM call error | model={self.model.model} | "
+                f"messages={msg_count} turns | total_chars~{total_chars} | "
+                f"tools={tool_count} | stream={request.stream}"
+            )
+            # Log first and last message role/content preview
+            if messages:
+                first_msg = messages[0]
+                last_msg = messages[-1]
+                first_content = str(first_msg.get("content", ""))[:100]
+                last_content = str(last_msg.get("content", ""))[:100]
+                logger.error(
+                    f"   First message: role={first_msg.get('role')}, content_preview={first_content}"
+                )
+                logger.error(
+                    f"   Last message: role={last_msg.get('role')}, content_preview={last_content}"
+                )
 
             # Check if error is context overflow (non-retryable, needs session reset)
             # Method 1: Check for special marker (set in stream error handling above)
@@ -862,7 +894,9 @@ class AgentStreamExecutor:
                     wait_time = (retry_count + 1) * 2  # 2s, 4s, 6s for other errors
 
                 logger.warning(
-                    f"⚠️ LLM API error (attempt {retry_count + 1}/{max_retries}): {e}"
+                    f"⚠️ LLM API error | model={self.model.model} | "
+                    f"attempt {retry_count + 1}/{max_retries} | "
+                    f"wait={wait_time}s | error={e}"
                 )
                 logger.info(f"Retrying in {wait_time}s...")
                 time.sleep(wait_time)

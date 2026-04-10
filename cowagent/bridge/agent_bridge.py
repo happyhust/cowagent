@@ -109,14 +109,20 @@ class AgentLLMModel(LLMModel):
 
     def _resolve_bot_type(self, model_name: str) -> str:
         """Resolve bot type from model name, matching Bridge.__init__ logic."""
-        from cowagent.config import conf
+        from cowagent.config import conf, LLM_PROVIDER_TO_BOT_TYPE
 
-        if conf().get("use_linkai", False) and conf().get("llm_api_key"):
-            return const.LINKAI
-        # Support custom bot type configuration
+        # Support explicit bot_type configuration (highest priority)
         configured_bot_type = conf().get("bot_type")
         if configured_bot_type:
             return configured_bot_type
+
+        # Use llm_provider mapping, consistent with Bridge.__init__
+        llm_provider = conf().get("llm_provider")
+        if llm_provider and llm_provider in LLM_PROVIDER_TO_BOT_TYPE:
+            return LLM_PROVIDER_TO_BOT_TYPE[llm_provider]
+
+        if conf().get("use_linkai", False) and conf().get("llm_api_key"):
+            return const.LINKAI
 
         if not model_name or not isinstance(model_name, str):
             return const.OPENAI
@@ -193,7 +199,12 @@ class AgentLLMModel(LLMModel):
                 raise NotImplementedError("Regular call not implemented yet")
 
         except Exception as e:
-            logger.error(f"AgentLLMModel call error: {e}")
+            logger.error(
+                f"AgentLLMModel call error | model={self.model} | "
+                f"bot_type={type(self.bot).__name__} | "
+                f"messages={len(request.messages)} | error={e}",
+                exc_info=True,
+            )
             raise
 
     def call_stream(self, request: LLMRequest):
@@ -242,7 +253,12 @@ class AgentLLMModel(LLMModel):
                 )
 
         except Exception as e:
-            logger.error(f"AgentLLMModel call_stream error: {e}", exc_info=True)
+            bot_type = type(self.bot).__name__
+            logger.error(
+                f"AgentLLMModel call_stream error | model={self.model} | "
+                f"bot={bot_type} | messages={len(request.messages)} | error={e}",
+                exc_info=True,
+            )
             raise
 
     def _format_response(self, response):
@@ -498,7 +514,13 @@ class AgentBridge:
             return Reply(ReplyType.TEXT, response)
 
         except Exception as e:
-            logger.error(f"Agent reply error: {e}")
+            import traceback
+
+            tb = traceback.format_exc()
+            logger.error(
+                f"Agent reply error | session_id={session_id} | "
+                f"query={query[:80]} | error={e}\n{tb}"
+            )
             # If the agent cleared its messages due to format error / overflow,
             # also purge the DB so the next request starts clean.
             if session_id and agent:

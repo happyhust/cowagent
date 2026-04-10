@@ -435,7 +435,7 @@ class WebChannel(ChatChannel):
 
     def chat_page(self):
         """Serve the chat HTML page."""
-        file_path = os.path.join(os.path.dirname(__file__), "chat.html")  # 使用绝对路径
+        file_path = os.path.join(os.path.dirname(__file__), "static", "chat.html")
         with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
 
@@ -461,11 +461,6 @@ class WebChannel(ChatChannel):
             f"[WebChannel] 🌍 服务器访问: http://YOUR_IP:{port} (请将YOUR_IP替换为服务器IP)"
         )
 
-        # 确保静态文件目录存在
-        static_dir = os.path.join(os.path.dirname(__file__), "static")
-        if not os.path.exists(static_dir):
-            os.makedirs(static_dir)
-            logger.debug(f"[WebChannel] Created static directory: {static_dir}")
 
         urls = (
             "/",
@@ -640,8 +635,7 @@ class StreamHandler:
 
 class ChatHandler:
     def GET(self):
-        # 正常返回聊天页面
-        file_path = os.path.join(os.path.dirname(__file__), "chat.html")
+        file_path = os.path.join(os.path.dirname(__file__), "static", "chat.html")
         with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
 
@@ -758,20 +752,12 @@ class ConfigHandler:
         "llm_provider",
         "llm_model",
         "llm_api_base",
-        "llm_api_key",
         "bot_type",
         "use_linkai",
         "agent_max_context_tokens",
         "agent_max_context_turns",
         "agent_max_steps",
     }
-
-    @staticmethod
-    def _mask_key(value: str) -> str:
-        """Mask the middle part of an API key for display."""
-        if not value or len(value) <= 8:
-            return value
-        return value[:4] + "*" * (len(value) - 8) + value[-4:]
 
     def GET(self):
         """Return configuration info and provider/model metadata."""
@@ -784,7 +770,6 @@ class ConfigHandler:
             llm_provider = local_config.get("llm_provider", "openai")
             llm_model = local_config.get("llm_model", "")
             llm_api_base = local_config.get("llm_api_base", "")
-            llm_api_key_raw = local_config.get("llm_api_key", "")
 
             providers = {}
             for pid, p in self.LLM_PROVIDERS.items():
@@ -801,7 +786,6 @@ class ConfigHandler:
                     "llm_provider": llm_provider,
                     "llm_model": llm_model,
                     "llm_api_base": llm_api_base,
-                    "llm_api_key": self._mask_key(llm_api_key_raw) if llm_api_key_raw else "",
                     "bot_type": "openai"
                     if local_config.get("bot_type") == "chatGPT"
                     else local_config.get("bot_type", ""),
@@ -811,7 +795,7 @@ class ConfigHandler:
                         "agent_max_context_tokens", 50000
                     ),
                     "agent_max_context_turns": local_config.get(
-                        "agent_max_context_turns", 20
+                        "agent_max_context_turns", 30
                     ),
                     "agent_max_steps": local_config.get("agent_max_steps", 15),
                     "providers": providers,

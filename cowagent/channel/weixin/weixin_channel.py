@@ -518,7 +518,7 @@ class WeixinChannel(ChatChannel):
             )
             return
 
-        if reply.type == ReplyType.TEXT:
+        if reply.type in (ReplyType.TEXT, ReplyType.ERROR, ReplyType.INFO):
             self._send_text(reply.content, receiver, context_token)
         elif reply.type in (ReplyType.IMAGE_URL, ReplyType.IMAGE):
             self._send_image(reply.content, receiver, context_token)

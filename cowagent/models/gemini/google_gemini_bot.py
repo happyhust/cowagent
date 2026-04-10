@@ -99,7 +99,11 @@ class GoogleGeminiBot(Bot):
             return Reply(ReplyType.ERROR, error_message)
 
         except Exception as e:
-            logger.error(f"[Gemini] Error generating response: {str(e)}", exc_info=True)
+            logger.error(
+                f"[Gemini] reply error | model={self.model} | "
+                f"session_id={session_id} | query={query[:80]} | error={e}",
+                exc_info=True,
+            )
             error_message = "Failed to invoke [Gemini] api!"
             if session_id:
                 self.sessions.session_reply(error_message, session_id)
@@ -465,7 +469,9 @@ class GoogleGeminiBot(Bot):
             if stream and response.status_code != 200:
                 error_text = response.text
                 logger.error(
-                    f"[Gemini] API error ({response.status_code}): {error_text}"
+                    f"[Gemini] stream API error | model={model_name} | "
+                    f"url={endpoint} | status={response.status_code} | "
+                    f"error={error_text[:500]}"
                 )
 
                 def error_generator():
@@ -483,7 +489,12 @@ class GoogleGeminiBot(Bot):
                 return self._handle_gemini_rest_sync_response(response, model_name)
 
         except Exception as e:
-            logger.error(f"[Gemini] call_with_tools error: {e}", exc_info=True)
+            logger.error(
+                f"[Gemini] call_with_tools error | model={model_name} | "
+                f"messages={len(messages)} | tools={len(tools) if tools else 0} | "
+                f"stream={stream} | error={e}",
+                exc_info=True,
+            )
             error_msg = str(e)  # Capture error message before creating generator
             if stream:
 

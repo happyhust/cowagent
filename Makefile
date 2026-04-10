@@ -1,4 +1,7 @@
-.PHONY: start stop restart status clean init install format lint test help start-ui stop-ui
+# CowAgent uses uv for Python environment management
+# uv will create a venv with Python 3.12 and install dependencies
+
+.PHONY: start stop restart status clean format lint test help start-ui stop-ui uv-sync
 
 BASE_DIR := $(shell pwd)
 
@@ -23,13 +26,18 @@ start-ui:
 stop-ui:
 	@$(BASE_DIR)/scripts/stop-ui.sh
 
+# Sync dependencies with uv (creates venv with Python 3.12 if needed)
+uv-sync:
+	@uv python install 3.12 --install-dir "$(BASE_DIR)/.python" 2>/dev/null || true
+	@uv sync --python "$(BASE_DIR)/.python/3.12" --all-extras --dev 2>/dev/null \
+		|| uv sync --all-extras
+
 # Install and configure (interactive wizard)
 install:
 	@$(BASE_DIR)/scripts/install.sh
 
 # Install dependencies only (non-interactive)
-init:
-	@$(BASE_DIR)/scripts/init.sh
+init: uv-sync
 
 # Clean logs and temp files
 clean:
@@ -82,8 +90,9 @@ help:
 	@echo "  status     Check service status"
 	@echo "  start-ui   Start Web UI (frontend, requires backend)"
 	@echo "  stop-ui    Stop Web UI"
+	@echo "  uv-sync    Sync dependencies with uv (Python 3.12)"
 	@echo "  clean      Remove logs and __pycache__"
-	@echo "  init       Install dependencies (non-interactive)"
+	@echo "  init       Install dependencies via uv"
 	@echo "  install    Interactive setup wizard (model, channel, config)"
 	@echo "  format     Format code (Python + frontend)"
 	@echo "  lint       Lint code (Python + frontend)"

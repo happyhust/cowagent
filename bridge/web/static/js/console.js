@@ -1332,11 +1332,10 @@ function applyHighlighting(container) {
 // Config View
 // =====================================================================
 let configProviders = {};
-let configApiBases = {};
-let configApiKeys = {};
 let configCurrentModel = '';
 let cfgProviderValue = '';
 let cfgModelValue = '';
+let configApiBase = '';
 
 // --- Custom dropdown helper ---
 function initDropdown(el, options, selectedValue, onChange) {
@@ -1391,9 +1390,8 @@ function getDropdownValue(el) { return el._ddValue || ''; }
 // --- Config init ---
 function initConfigView(data) {
     configProviders = data.providers || {};
-    configApiBases = data.api_bases || {};
-    configApiKeys = data.api_keys || {};
-    configCurrentModel = data.model || '';
+    configApiBase = data.llm_api_base || '';
+    configCurrentModel = data.llm_model || '';
 
     const providerEl = document.getElementById('cfg-provider');
     const providerOpts = Object.entries(configProviders).map(([pid, p]) => ({ value: pid, label: p.label }));
@@ -1434,55 +1432,8 @@ function onProviderChange(pid) {
 
     initDropdown(modelEl, modelOpts, modelOpts[0] ? modelOpts[0].value : '', onModelSelectChange);
 
-    // API Key
-    const keyField = p.api_key_field;
-    const keyWrap = document.getElementById('cfg-api-key-wrap');
-    const keyInput = document.getElementById('cfg-api-key');
-    if (keyField) {
-        keyWrap.classList.remove('hidden');
-        keyInput.classList.add('cfg-key-masked');
-        const maskedVal = configApiKeys[keyField] || '';
-        keyInput.value = maskedVal;
-        keyInput.dataset.field = keyField;
-        keyInput.dataset.masked = maskedVal ? '1' : '';
-        keyInput.dataset.maskedVal = maskedVal;
-        const toggleIcon = document.querySelector('#cfg-api-key-toggle i');
-        if (toggleIcon) toggleIcon.className = 'fas fa-eye text-xs';
-
-        if (!keyInput._cfgBound) {
-            keyInput.addEventListener('focus', function() {
-                if (this.dataset.masked === '1') {
-                    this.value = '';
-                    this.dataset.masked = '';
-                    this.classList.remove('cfg-key-masked');
-                }
-            });
-            keyInput.addEventListener('blur', function() {
-                if (!this.value.trim() && this.dataset.maskedVal) {
-                    this.value = this.dataset.maskedVal;
-                    this.dataset.masked = '1';
-                    this.classList.add('cfg-key-masked');
-                }
-            });
-            keyInput.addEventListener('input', function() {
-                this.dataset.masked = '';
-            });
-            keyInput._cfgBound = true;
-        }
-    } else {
-        keyWrap.classList.add('hidden');
-        keyInput.value = '';
-        keyInput.dataset.field = '';
-    }
-
     // API Base
-    if (p.api_base_key) {
-        document.getElementById('cfg-api-base-wrap').classList.remove('hidden');
-        document.getElementById('cfg-api-base').value = configApiBases[p.api_base_key] || p.api_base_default || '';
-    } else {
-        document.getElementById('cfg-api-base-wrap').classList.add('hidden');
-        document.getElementById('cfg-api-base').value = '';
-    }
+    document.getElementById('cfg-api-base').value = configApiBase || '';
 
     onModelSelectChange(modelOpts[0] ? modelOpts[0].value : '');
 }
@@ -1527,18 +1478,6 @@ function getSelectedModel() {
     return cfgModelValue;
 }
 
-function toggleApiKeyVisibility() {
-    const input = document.getElementById('cfg-api-key');
-    const icon = document.querySelector('#cfg-api-key-toggle i');
-    if (input.classList.contains('cfg-key-masked')) {
-        input.classList.remove('cfg-key-masked');
-        icon.className = 'fas fa-eye-slash text-xs';
-    } else {
-        input.classList.add('cfg-key-masked');
-        icon.className = 'fas fa-eye text-xs';
-    }
-}
-
 function showStatus(elId, msgKey, isError) {
     const el = document.getElementById(elId);
     el.textContent = t(msgKey);
@@ -1552,25 +1491,19 @@ function saveModelConfig() {
     const model = getSelectedModel();
     if (!model) return;
 
-    const updates = { model: model };
+    const updates = { llm_model: model };
     const p = configProviders[cfgProviderValue];
     updates.use_linkai = (cfgProviderValue === 'linkai');
     if (cfgProviderValue === 'linkai') {
         updates.bot_type = '';
+        updates.llm_provider = '';
     } else {
         updates.bot_type = cfgProviderValue;
+        updates.llm_provider = cfgProviderValue;
     }
-    if (p && p.api_base_key) {
-        const base = document.getElementById('cfg-api-base').value.trim();
-        if (base) updates[p.api_base_key] = base;
-    }
-    if (p && p.api_key_field) {
-        const keyInput = document.getElementById('cfg-api-key');
-        const rawVal = keyInput.value.trim();
-        if (rawVal && keyInput.dataset.masked !== '1') {
-            updates[p.api_key_field] = rawVal;
-        }
-    }
+    // API Base (editable via config file only)
+    const base = document.getElementById('cfg-api-base').value.trim();
+    if (base) updates.llm_api_base = base;
 
     const btn = document.getElementById('cfg-model-save');
     btn.disabled = true;
@@ -1584,24 +1517,9 @@ function saveModelConfig() {
         if (data.status === 'success') {
             configCurrentModel = model;
             if (data.applied) {
-                const keyInput = document.getElementById('cfg-api-key');
                 Object.entries(data.applied).forEach(([k, v]) => {
-                    if (k === 'model') return;
-                    if (k.includes('api_key')) {
-                        const masked = v.length > 8
-                            ? v.substring(0, 4) + '*'.repeat(v.length - 8) + v.substring(v.length - 4)
-                            : v;
-                        configApiKeys[k] = masked;
-                        if (keyInput.dataset.field === k) {
-                            keyInput.value = masked;
-                            keyInput.dataset.masked = '1';
-                            keyInput.dataset.maskedVal = masked;
-                            keyInput.classList.add('cfg-key-masked');
-                            const toggleIcon = document.querySelector('#cfg-api-key-toggle i');
-                            if (toggleIcon) toggleIcon.className = 'fas fa-eye text-xs';
-                        }
-                    } else {
-                        configApiBases[k] = v;
+                    if (k === 'llm_api_base') {
+                        configApiBase = v;
                     }
                 });
             }

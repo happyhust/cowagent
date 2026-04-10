@@ -461,7 +461,7 @@ class WecomBotChannel(ChatChannel):
         # Determine req_id for responding or use send_msg for scheduled push
         req_id = getattr(msg, "req_id", None) if msg else None
 
-        if reply.type == ReplyType.TEXT:
+        if reply.type in (ReplyType.TEXT, ReplyType.ERROR, ReplyType.INFO):
             self._send_text(reply.content, receiver, is_group, req_id)
         elif reply.type in (ReplyType.IMAGE_URL, ReplyType.IMAGE):
             self._send_image(reply.content, receiver, is_group, req_id)

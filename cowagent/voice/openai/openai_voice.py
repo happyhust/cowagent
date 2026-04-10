@@ -2,9 +2,6 @@
 google voice service
 """
 
-
-import openai
-
 from cowagent.bridge.reply import Reply, ReplyType
 from cowagent.common.log import logger
 from cowagent.config import conf
@@ -17,7 +14,7 @@ import random
 
 class OpenaiVoice(Voice):
     def __init__(self):
-        openai.api_key = conf().get("llm_api_key")
+        pass
 
     def voiceToText(self, voice_file):
         logger.debug("[Openai] voice file name={}".format(voice_file))

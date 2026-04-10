@@ -132,6 +132,14 @@ class ZHIPUAIBot(Bot, ZhipuAIImage):
             result = {"completion_tokens": 0, "content": "我现在有点累了，等会再来吧"}
             error_str = str(e).lower()
 
+            logger.error(
+                f"[ZHIPU_AI] reply_text error | model={self.args.get('model')} | "
+                f"session_id={session.session_id} | retry={retry_count} | "
+                f"message_count={len(session.messages)} | error_type={type(e).__name__} | "
+                f"error={e}",
+                exc_info=need_retry,
+            )
+
             # Check error type by error message content
             if "rate" in error_str and "limit" in error_str:
                 logger.warn("[ZHIPU_AI] RateLimitError: {}".format(e))
@@ -241,7 +249,15 @@ class ZHIPUAIBot(Bot, ZhipuAIImage):
 
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"[ZHIPU_AI] call_with_tools error: {error_msg}")
+            model_name = kwargs.get("model", self.args.get("model", "glm-4"))
+            msg_count = len(messages) if messages else 0
+            tool_count = len(tools) if tools else 0
+            logger.error(
+                f"[ZHIPU_AI] call_with_tools error | model={model_name} | "
+                f"messages={msg_count} | tools={tool_count} | stream={stream} | "
+                f"error={error_msg}",
+                exc_info=True,
+            )
             if stream:
 
                 def error_generator():
@@ -283,7 +299,11 @@ class ZHIPUAIBot(Bot, ZhipuAIImage):
             }
 
         except Exception as e:
-            logger.error(f"[ZHIPU_AI] sync response error: {e}")
+            model_name = request_params.get("model", "glm-4")
+            logger.error(
+                f"[ZHIPU_AI] sync response error | model={model_name} | error={e}",
+                exc_info=True,
+            )
             return {"error": True, "message": str(e), "status_code": 500}
 
     def _handle_stream_response(self, request_params):
@@ -366,7 +386,11 @@ class ZHIPUAIBot(Bot, ZhipuAIImage):
                 yield openai_chunk
 
         except Exception as e:
-            logger.error(f"[ZHIPU_AI] stream response error: {e}")
+            model_name = request_params.get("model", "glm-4")
+            logger.error(
+                f"[ZHIPU_AI] stream response error | model={model_name} | error={e}",
+                exc_info=True,
+            )
             yield {"error": True, "message": str(e), "status_code": 500}
 
     def _convert_tools_to_zhipu_format(self, tools):

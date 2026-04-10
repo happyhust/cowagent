@@ -182,6 +182,16 @@ class ClaudeAPIBot(Bot, OpenAIImage):
                 "content": "我现在有点累了，等会再来吧",
             }
 
+            # Log detailed error context
+            actual_model = self._model_mapping(conf().get("llm_model"))
+            logger.error(
+                f"[CLAUDE_API] reply_text error | model={actual_model} | "
+                f"session_id={session.session_id} | retry={retry_count} | "
+                f"message_count={len(session.messages)} | error_type={type(e).__name__} | "
+                f"error={e}",
+                exc_info=True,
+            )
+
             # Handle different types of errors
             error_str = str(e).lower()
             if "rate" in error_str or "limit" in error_str:
@@ -282,7 +292,14 @@ class ClaudeAPIBot(Bot, OpenAIImage):
             else:
                 return self._handle_sync_response(request_params)
         except Exception as e:
-            logger.error(f"Claude API call error: {e}")
+            msg_count = len(messages) if messages else 0
+            tool_count = len(tools) if tools else 0
+            logger.error(
+                f"[CLAUDE_API] call_with_tools error | model={actual_model} | "
+                f"messages={msg_count} | tools={tool_count} | stream={stream} | "
+                f"error={e}",
+                exc_info=True,
+            )
             error_msg = str(e)
             if stream:
                 # Return error generator for stream
@@ -515,12 +532,21 @@ class ClaudeAPIBot(Bot, OpenAIImage):
                             continue
 
         except requests.RequestException as e:
-            logger.error(f"Claude streaming request error: {e}")
+            model_name = request_params.get("model", "unknown")
+            logger.error(
+                f"[CLAUDE_API] streaming request error | model={model_name} | "
+                f"url={self.api_base}/messages | error={e}",
+                exc_info=True,
+            )
             yield {
                 "error": True,
                 "message": f"Connection error: {str(e)}",
                 "status_code": 0,
             }
         except Exception as e:
-            logger.error(f"Claude streaming error: {e}")
+            model_name = request_params.get("model", "unknown")
+            logger.error(
+                f"[CLAUDE_API] streaming error | model={model_name} | error={e}",
+                exc_info=True,
+            )
             yield {"error": True, "message": str(e), "status_code": 500}

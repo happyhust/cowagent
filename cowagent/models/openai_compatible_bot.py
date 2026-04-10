@@ -8,7 +8,7 @@ This includes: OpenAI, LinkAI, Azure OpenAI, and many third-party providers.
 """
 
 import json
-import openai
+from openai import OpenAI
 from cowagent.common.log import logger
 from cowagent.agent.protocol.message_utils import drop_orphaned_tool_results_openai
 
@@ -45,6 +45,21 @@ class OpenAICompatibleBot:
             }
         """
         raise NotImplementedError("Subclasses must implement get_api_config()")
+
+    def _get_client(self, api_key=None, api_base=None):
+        """Create an OpenAI client with the given configuration."""
+        kwargs = {}
+        if api_key:
+            kwargs["api_key"] = api_key
+        if api_base:
+            kwargs["base_url"] = api_base
+        return OpenAI(**kwargs)
+
+    def _model_to_dict(self, obj):
+        """Convert an OpenAI SDK model object to a dict for backward compatibility."""
+        if isinstance(obj, dict):
+            return obj
+        return obj.model_dump() if hasattr(obj, "model_dump") else obj
 
     def call_with_tools(self, messages, tools=None, stream=False, **kwargs):
         """
@@ -124,8 +139,14 @@ class OpenAICompatibleBot:
 
         except Exception as e:
             error_msg = str(e)
+            model_name = api_config.get("model", "unknown")
+            msg_count = len(messages) if messages else 0
+            tool_count = len(tools) if tools else 0
             logger.error(
-                f"[{self.__class__.__name__}] call_with_tools error: {error_msg}"
+                f"[{self.__class__.__name__}] call_with_tools error | "
+                f"model={model_name} | messages={msg_count} | tools={tool_count} | "
+                f"stream={stream} | error={error_msg}",
+                exc_info=True,
             )
             if stream:
 
@@ -139,38 +160,36 @@ class OpenAICompatibleBot:
     def _handle_sync_response(self, request_params, api_key, api_base):
         """Handle synchronous OpenAI API response"""
         try:
-            # Build kwargs with explicit API configuration
-            kwargs = dict(request_params)
-            if api_key:
-                kwargs["api_key"] = api_key
-            if api_base:
-                kwargs["api_base"] = api_base
-
-            response = openai.ChatCompletion.create(**kwargs)
-            return response
+            client = self._get_client(api_key, api_base)
+            response = client.chat.completions.create(**request_params)
+            return self._model_to_dict(response)
 
         except Exception as e:
-            logger.error(f"[{self.__class__.__name__}] sync response error: {e}")
+            model_name = request_params.get("model", "unknown")
+            logger.error(
+                f"[{self.__class__.__name__}] sync response error | "
+                f"model={model_name} | error={e}",
+                exc_info=True,
+            )
             return {"error": True, "message": str(e), "status_code": 500}
 
     def _handle_stream_response(self, request_params, api_key, api_base):
         """Handle streaming OpenAI API response"""
         try:
-            # Build kwargs with explicit API configuration
-            kwargs = dict(request_params)
-            if api_key:
-                kwargs["api_key"] = api_key
-            if api_base:
-                kwargs["api_base"] = api_base
-
-            stream = openai.ChatCompletion.create(**kwargs)
+            client = self._get_client(api_key, api_base)
+            stream = client.chat.completions.create(**request_params)
 
             # Stream chunks to caller
             for chunk in stream:
-                yield chunk
+                yield self._model_to_dict(chunk)
 
         except Exception as e:
-            logger.error(f"[{self.__class__.__name__}] stream response error: {e}")
+            model_name = request_params.get("model", "unknown")
+            logger.error(
+                f"[{self.__class__.__name__}] stream response error | "
+                f"model={model_name} | error={e}",
+                exc_info=True,
+            )
             yield {"error": True, "message": str(e), "status_code": 500}
 
     def _convert_tools_to_openai_format(self, tools):

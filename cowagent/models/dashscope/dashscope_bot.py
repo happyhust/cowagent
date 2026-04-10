@@ -40,6 +40,20 @@ class DashscopeBot(Bot):
         api_key = conf().get("llm_api_key")
         if api_key:
             os.environ["DASHSCOPE_API_KEY"] = api_key
+        api_base = conf().get("llm_api_base")
+        if api_base:
+            api_base = api_base.rstrip("/")
+            dashscope_base = "https://dashscope.aliyuncs.com/api/v1"
+            if api_base != dashscope_base:
+                raise RuntimeError(
+                    f"[DashScope] llm_api_base 配置错误: 当前值为 '{api_base}'，"
+                    f"但 DashScope SDK 原生接口仅支持 '{dashscope_base}'。\n"
+                    f"DashScope 原生 SDK（Generation / MultiModalConversation）"
+                    f"不兼容 OpenAI 兼容的 API 地址。\n"
+                    f"如需使用 OpenAI 兼容的接口，请将 config.json 中的 "
+                    f"'llm_provider' 改为 'openai'。"
+                )
+            dashscope.base_http_api_url = api_base
 
     @property
     def api_key(self):
@@ -142,13 +156,9 @@ class DashscopeBot(Bot):
                 }
             else:
                 logger.error(
-                    "Request id: %s, Status code: %s, error code: %s, error message: %s"
-                    % (
-                        response.request_id,
-                        response.status_code,
-                        response.code,
-                        response.message,
-                    )
+                    f"[DASHSCOPE] API error | model={self.model_name} | "
+                    f"request_id={response.request_id} | status_code={response.status_code} | "
+                    f"code={response.code} | message={response.message}"
                 )
                 result = {
                     "completion_tokens": 0,
@@ -164,7 +174,12 @@ class DashscopeBot(Bot):
                 else:
                     return result
         except Exception as e:
-            logger.exception(e)
+            logger.error(
+                f"[DASHSCOPE] reply_text error | model={self.model_name} | "
+                f"session_id={session.session_id} | retry={retry_count} | "
+                f"message_count={len(session.messages)} | error={e}",
+                exc_info=True,
+            )
             need_retry = retry_count < 2
             result = {"completion_tokens": 0, "content": "我现在有点累了，等会再来吧"}
             if need_retry:
@@ -259,7 +274,14 @@ class DashscopeBot(Bot):
 
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"[DASHSCOPE] call_with_tools error: {error_msg}")
+            msg_count = len(messages) if messages else 0
+            tool_count = len(tools) if tools else 0
+            logger.error(
+                f"[DASHSCOPE] call_with_tools error | model={kwargs.get('model', self.model_name)} | "
+                f"messages={msg_count} | tools={tool_count} | stream={stream} | "
+                f"error={error_msg}",
+                exc_info=True,
+            )
             if stream:
 
                 def error_generator():
@@ -335,7 +357,11 @@ class DashscopeBot(Bot):
                 }
 
         except Exception as e:
-            logger.error(f"[DASHSCOPE] sync response error: {e}")
+            logger.error(
+                f"[DASHSCOPE] sync response error | model={model_name} | "
+                f"error={e}",
+                exc_info=True,
+            )
             return {"error": True, "message": str(e), "status_code": 500}
 
     def _handle_stream_response(self, model_name, messages, parameters):
@@ -363,8 +389,18 @@ class DashscopeBot(Bot):
 
                 if status_code != HTTPStatus.OK:
                     err_code = resp_dict.get("code", "")
-                    err_msg = resp_dict.get("message", "Unknown error")
-                    logger.error(f"[DASHSCOPE] Stream error: {err_code} - {err_msg}")
+                    err_msg = resp_dict.get("message", "")
+                    # Construct meaningful error when API returns no message
+                    if not err_msg:
+                        request_id = resp_dict.get("request_id", "")
+                        err_msg = (
+                            f"API returned HTTP {status_code} with no error details"
+                            f" (code={err_code}, request_id={request_id})"
+                        )
+                    logger.error(
+                        f"[DASHSCOPE] Stream error | model={model_name} | "
+                        f"HTTP {status_code} | code={err_code} | message={err_msg}"
+                    )
                     yield {
                         "error": True,
                         "message": err_msg,
@@ -424,8 +460,20 @@ class DashscopeBot(Bot):
                 yield openai_chunk
 
         except Exception as e:
-            logger.error(f"[DASHSCOPE] stream response error: {e}", exc_info=True)
-            yield {"error": True, "message": str(e), "status_code": 500}
+            logger.error(
+                f"[DASHSCOPE] stream response error | model={model_name} | "
+                f"error={e}",
+                exc_info=True,
+            )
+            err_detail = str(e)
+            # Ensure 404 without details gets a helpful message
+            if "404" in err_detail and "message" not in err_detail.lower():
+                err_detail += (
+                    f" — The endpoint for model '{model_name}' was not found. "
+                    f"Check if llm_api_base '{conf().get('llm_api_base', '')}' "
+                    f"supports the {'MultiModalConversation' if self._is_multimodal_model(model_name) else 'Generation'} API."
+                )
+            yield {"error": True, "message": err_detail, "status_code": 500}
 
     @staticmethod
     def _response_to_dict(response) -> dict:

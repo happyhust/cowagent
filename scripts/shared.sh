@@ -25,6 +25,19 @@ get_base_dir() {
 
 # Detect and set Python command
 detect_python_command() {
+    # Use uv to manage Python and dependencies
+    if command -v uv &> /dev/null; then
+        PYTHON_CMD="uv run"
+        PYTHON_VERSION="$(uv python list --only-installed 2>/dev/null | grep '3\.12' | head -1 | awk '{print $1}' || echo '3.12')"
+        if [ -z "$PYTHON_VERSION" ]; then
+            PYTHON_VERSION="3.12"
+        fi
+        echo -e "${GREEN}✅ Using uv with Python $PYTHON_VERSION${NC}"
+        export PYTHON_CMD PYTHON_VERSION
+        return
+    fi
+
+    # Fallback: detect system Python
     local FOUND_NEWER_VERSION=""
     for cmd in python3 python python3.12 python3.11 python3.10 python3.9 python3.8 python3.7; do
         if command -v $cmd &> /dev/null; then
@@ -61,6 +74,10 @@ detect_python_command() {
 # Check Python version
 check_python_version() {
     detect_python_command
+    if command -v uv &> /dev/null; then
+        # uv manages its own environment, no pip check needed
+        return
+    fi
     if ! $PYTHON_CMD -m pip --version &> /dev/null; then
         echo -e "${RED}❌ pip not found for $PYTHON_CMD. Please install pip.${NC}"
         exit 1
@@ -70,7 +87,18 @@ check_python_version() {
 
 # Install dependencies
 install_dependencies() {
-    echo -e "${GREEN}📦 Installing dependencies...${NC}"
+    if command -v uv &> /dev/null; then
+        echo -e "${GREEN}📦 Installing dependencies with uv...${NC}"
+        uv sync --all-extras
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✅ Dependencies installed successfully with uv.${NC}"
+        else
+            echo -e "${YELLOW}⚠️  uv installation had errors, but continuing...${NC}"
+        fi
+        return
+    fi
+
+    echo -e "${GREEN}📦 Installing dependencies with pip...${NC}"
     local PIP_MIRROR=""
     if curl -s --connect-timeout 5 https://pypi.tuna.tsinghua.edu.cn/simple/ > /dev/null 2>&1; then
         PIP_MIRROR="-i https://pypi.tuna.tsinghua.edu.cn/simple"
@@ -91,7 +119,7 @@ install_dependencies() {
 
     echo -e "${YELLOW}Installing project dependencies...${NC}"
     set +e
-    $PYTHON_CMD -m pip install -r requirements.txt $PIP_EXTRA_ARGS $PIP_MIRROR > /tmp/pip_install.log 2>&1
+    $PYTHON_CMD -m pip install -e ".[all]" $PIP_EXTRA_ARGS $PIP_MIRROR > /tmp/pip_install.log 2>&1
     local exit_code=$?
     set -e
     cat /tmp/pip_install.log
@@ -105,14 +133,14 @@ install_dependencies() {
             IGNORE_PACKAGES="$IGNORE_PACKAGES --ignore-installed $pkg"
         done
         set +e
-        $PYTHON_CMD -m pip install -r requirements.txt $IGNORE_PACKAGES $PIP_EXTRA_ARGS $PIP_MIRROR \
+        $PYTHON_CMD -m pip install -e ".[all]" $IGNORE_PACKAGES $PIP_EXTRA_ARGS $PIP_MIRROR \
             && echo -e "${GREEN}✅ Dependencies installed successfully (workaround applied).${NC}" \
             || echo -e "${YELLOW}⚠️  Some dependencies may have issues, but continuing...${NC}"
         set -e
     elif grep -q "externally-managed-environment" /tmp/pip_install.log; then
         echo -e "${YELLOW}⚠️  Detected externally-managed environment, retrying with --break-system-packages...${NC}"
         set +e
-        $PYTHON_CMD -m pip install -r requirements.txt --break-system-packages $PIP_MIRROR \
+        $PYTHON_CMD -m pip install -e ".[all]" --break-system-packages $PIP_MIRROR \
             && echo -e "${GREEN}✅ Dependencies installed successfully (system packages override applied).${NC}" \
             || echo -e "${YELLOW}⚠️  Some dependencies may have issues, but continuing...${NC}"
         set -e
@@ -121,13 +149,14 @@ install_dependencies() {
     fi
     rm -f /tmp/pip_install.log
 
-    echo -e "${YELLOW}Registering cow CLI...${NC}"
+    echo -e "${GREEN}✅ All dependencies (core + voice + plugins) installed.${NC}"
+
+    echo -e "${YELLOW}Verifying cow CLI...${NC}"
     set +e
-    $PYTHON_CMD -m pip install -e . $PIP_EXTRA_ARGS $PIP_MIRROR > /dev/null 2>&1
     if command -v cow &> /dev/null; then
-        echo -e "${GREEN}✅ cow CLI registered.${NC}"
+        echo -e "${GREEN}✅ cow CLI available.${NC}"
     else
-        echo -e "${YELLOW}⚠️  cow CLI not in PATH, you can still use: $PYTHON_CMD -m cli.cli${NC}"
+        echo -e "${YELLOW}⚠️  cow CLI not in PATH, you can still use: $PYTHON_CMD -m cowagent${NC}"
     fi
 
     echo -e "${YELLOW}Installing browser tool...${NC}"

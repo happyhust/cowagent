@@ -477,7 +477,7 @@ class QQChannel(ChatChannel):
         event_type = getattr(msg, "event_type", "")
         msg_id = getattr(msg, "msg_id", "")
 
-        if reply.type == ReplyType.TEXT:
+        if reply.type in (ReplyType.TEXT, ReplyType.ERROR, ReplyType.INFO):
             self._send_text(reply.content, msg, event_type, msg_id)
         elif reply.type in (ReplyType.IMAGE_URL, ReplyType.IMAGE):
             self._send_image(reply.content, msg, event_type, msg_id)

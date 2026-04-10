@@ -695,7 +695,13 @@ def _linkai_call_with_tools(self, messages, tools=None, stream=False, **kwargs):
             return self._handle_linkai_sync_response(base_url, headers, body)
 
     except Exception as e:
-        logger.error(f"[LinkAI] call_with_tools error: {e}")
+        model_name = body.get("model", "unknown")
+        msg_count = len(body.get("messages", []))
+        logger.error(
+            f"[LinkAI] call_with_tools error | model={model_name} | "
+            f"messages={msg_count} | stream={stream} | error={e}",
+            exc_info=True,
+        )
         error_msg = str(e)
         if stream:
 

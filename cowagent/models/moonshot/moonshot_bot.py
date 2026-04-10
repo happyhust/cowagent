@@ -153,7 +153,12 @@ class MoonshotBot(Bot):
                 else:
                     return result
         except Exception as e:
-            logger.exception(e)
+            logger.error(
+                f"[MOONSHOT] reply_text error | model={self.args.get('model')} | "
+                f"session_id={session.session_id} | retry={retry_count} | "
+                f"message_count={len(session.messages)} | error={e}",
+                exc_info=True,
+            )
             need_retry = retry_count < 2
             result = {"completion_tokens": 0, "content": "我现在有点累了，等会再来吧"}
             if need_retry:
@@ -241,10 +246,15 @@ class MoonshotBot(Bot):
 
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"[MOONSHOT] call_with_tools error: {e}")
-            import traceback
-
-            logger.error(traceback.format_exc())
+            model_name = kwargs.get("model", self.args.get("model", "moonshot-v1-8k"))
+            msg_count = len(messages) if messages else 0
+            tool_count = len(tools) if tools else 0
+            logger.error(
+                f"[MOONSHOT] call_with_tools error | model={model_name} | "
+                f"messages={msg_count} | tools={tool_count} | stream={stream} | "
+                f"error={error_msg}",
+                exc_info=True,
+            )
 
             def error_generator():
                 yield {"error": True, "message": error_msg, "status_code": 500}

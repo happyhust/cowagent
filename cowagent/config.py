@@ -346,9 +346,12 @@ def load_config():
     logger.info("[INIT] System Initialization")
     logger.info("[INIT] ========================================")
     logger.info("[INIT] Channel: {}".format(config.get("channel_type", "unknown")))
-    logger.info("[INIT] Model: {} ({})".format(
+    llm_api_base = config.get("llm_api_base", "")
+    llm_api_base_str = " (base: {})".format(llm_api_base) if llm_api_base else ""
+    logger.info("[INIT] Model: {} ({}){}".format(
         config.get("llm_model", "unknown"),
-        config.get("llm_provider", "unknown")
+        config.get("llm_provider", "unknown"),
+        llm_api_base_str
     ))
 
     # Agent模式信息

@@ -121,7 +121,12 @@ class BaiduWenxinBot(Bot):
                 "content": res_content,
             }
         except Exception as e:
-            logger.warn("[BAIDU] Exception: {}".format(e))
+            logger.error(
+                f"[BAIDU] reply_text error | model={session.model} | "
+                f"session_id={session.session_id} | retry={retry_count} | "
+                f"message_count={len(session.messages)} | error={e}",
+                exc_info=True,
+            )
             self.sessions.clear_session(session.session_id)
             result = {
                 "total_tokens": 0,

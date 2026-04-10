@@ -162,7 +162,12 @@ class DeepSeekBot(Bot, OpenAICompatibleBot):
                     return self.reply_text(session, args, retry_count + 1)
                 return result
         except Exception as e:
-            logger.exception(e)
+            logger.error(
+                f"[DEEPSEEK] reply_text error | model={self.args.get('model')} | "
+                f"session_id={session.session_id} | retry={retry_count} | "
+                f"message_count={len(session.messages)} | error={e}",
+                exc_info=True,
+            )
             if retry_count < 2:
                 return self.reply_text(session, args, retry_count + 1)
             return {"completion_tokens": 0, "content": "我现在有点累了，等会再来吧"}

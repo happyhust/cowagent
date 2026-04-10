@@ -2,7 +2,7 @@
 
 import time
 
-import openai
+from openai import OpenAI
 from cowagent.models.openai.openai_compat import (
     RateLimitError,
     Timeout,
@@ -26,40 +26,45 @@ user_session = dict()
 class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
     def __init__(self):
         super().__init__()
-        openai.api_key = conf().get("llm_api_key")
-        if conf().get("llm_api_base"):
-            openai.api_base = conf().get("llm_api_base")
-        proxy = conf().get("proxy")
-        if proxy:
-            openai.proxy = proxy
+        self.api_key = conf().get("llm_api_key")
+        self.api_base = conf().get("llm_api_base")
+        self.proxy = conf().get("proxy")
+        self.client = self._build_client()
 
         self.sessions = SessionManager(
             OpenAISession, model=conf().get("llm_model") or "text-davinci-003"
         )
         self.args = {
-            "model": conf().get("llm_model") or "text-davinci-003",  # 对话模型的名称
-            "temperature": conf().get(
-                "temperature", 0.9
-            ),  # 值在[0,1]之间，越大表示回复越具有不确定性
-            "max_tokens": 1200,  # 回复最大的字符数
+            "model": conf().get("llm_model") or "text-davinci-003",
+            "temperature": conf().get("temperature", 0.9),
+            "max_tokens": 1200,
             "top_p": 1,
-            "frequency_penalty": conf().get(
-                "frequency_penalty", 0.0
-            ),  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-            "presence_penalty": conf().get(
-                "presence_penalty", 0.0
-            ),  # [-2,2]之间，该值越大则更倾向于产生不同的内容
-            "request_timeout": conf().get(
-                "request_timeout", None
-            ),  # 请求超时时间，openai接口默认设置为600，对于难问题一般需要较长时间
-            "timeout": conf().get(
-                "request_timeout", None
-            ),  # 重试超时时间，在这个时间内，将会自动重试
-            "stop": ["\n\n\n"],
+            "frequency_penalty": conf().get("frequency_penalty", 0.0),
+            "presence_penalty": conf().get("presence_penalty", 0.0),
         }
 
+    def _build_client(self, api_key=None, api_base=None, proxy=None):
+        kwargs = {}
+        if api_key:
+            kwargs["api_key"] = api_key
+        elif self.api_key:
+            kwargs["api_key"] = self.api_key
+        if api_base:
+            kwargs["base_url"] = api_base
+        elif self.api_base:
+            kwargs["base_url"] = self.api_base
+        p = proxy or self.proxy
+        if p:
+            import httpx
+            kwargs["http_client"] = httpx.Client(proxy=p)
+        return OpenAI(**kwargs)
+
+    def _model_to_dict(self, obj):
+        if isinstance(obj, dict):
+            return obj
+        return obj.model_dump() if hasattr(obj, "model_dump") else obj
+
     def get_api_config(self):
-        """Get API configuration for OpenAI-compatible base class"""
         return {
             "api_key": conf().get("llm_api_key"),
             "api_base": conf().get("llm_api_base"),
@@ -71,7 +76,6 @@ class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
         }
 
     def reply(self, query, context=None):
-        # acquire reply content
         if context and context.type:
             if context.type == ContextType.TEXT:
                 logger.info("[OPEN_AI] query={}".format(query))
@@ -116,12 +120,11 @@ class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
 
     def reply_text(self, session: OpenAISession, retry_count=0):
         try:
-            response = openai.Completion.create(prompt=str(session), **self.args)
-            res_content = (
-                response.choices[0]["text"].strip().replace("<|endoftext|>", "")
-            )
-            total_tokens = response["usage"]["total_tokens"]
-            completion_tokens = response["usage"]["completion_tokens"]
+            response = self.client.completions.create(prompt=str(session), **self.args)
+            response_dict = self._model_to_dict(response)
+            res_content = response_dict["choices"][0]["text"].strip().replace("<think>", "").replace("</think>", "")
+            total_tokens = response_dict["usage"]["total_tokens"]
+            completion_tokens = response_dict["usage"]["completion_tokens"]
             logger.info("[OPEN_AI] reply={}".format(res_content))
             return {
                 "total_tokens": total_tokens,
@@ -131,6 +134,13 @@ class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
         except Exception as e:
             need_retry = retry_count < 2
             result = {"completion_tokens": 0, "content": "我现在有点累了，等会再来吧"}
+            logger.error(
+                f"[OPEN_AI] reply_text error | model={self.args.get('model')} | "
+                f"session_id={session.session_id} | retry={retry_count} | "
+                f"prompt_len={len(str(session))} | error_type={type(e).__name__} | "
+                f"error={e}",
+                exc_info=isinstance(e, (RateLimitError, Timeout, APIConnectionError)),
+            )
             if isinstance(e, RateLimitError):
                 logger.warn("[OPEN_AI] RateLimitError: {}".format(e))
                 result["content"] = "提问太快啦，请休息一下再问我吧"
@@ -157,28 +167,9 @@ class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
                 return result
 
     def call_with_tools(self, messages, tools=None, stream=False, **kwargs):
-        """
-        Call OpenAI API with tool support for agent integration
-        Note: This bot uses the old Completion API which doesn't support tools.
-        For tool support, use ChatGPTBot instead.
-
-        This method converts to ChatCompletion API when tools are provided.
-
-        Args:
-            messages: List of messages
-            tools: List of tool definitions (OpenAI format)
-            stream: Whether to use streaming
-            **kwargs: Additional parameters
-
-        Returns:
-            Formatted response in OpenAI format or generator for streaming
-        """
         try:
-            # The old Completion API doesn't support tools
-            # We need to use ChatCompletion API instead
             logger.info("[OPEN_AI] Using ChatCompletion API for tool support")
 
-            # Build request parameters for ChatCompletion
             request_params = {
                 "model": kwargs.get("model", conf().get("llm_model") or "gpt-4.1"),
                 "messages": messages,
@@ -195,16 +186,13 @@ class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
                 "stream": stream,
             }
 
-            # Add max_tokens if specified
             if kwargs.get("max_tokens"):
                 request_params["max_tokens"] = kwargs["max_tokens"]
 
-            # Add tools if provided
             if tools:
                 request_params["tools"] = tools
                 request_params["tool_choice"] = kwargs.get("tool_choice", "auto")
 
-            # Make API call using ChatCompletion
             if stream:
                 return self._handle_stream_response(request_params)
             else:
@@ -223,28 +211,25 @@ class OpenAIBot(Bot, OpenAIImage, OpenAICompatibleBot):
                 return {"error": True, "message": error_msg, "status_code": 500}
 
     def _handle_sync_response(self, request_params):
-        """Handle synchronous OpenAI ChatCompletion API response"""
         try:
-            response = openai.ChatCompletion.create(**request_params)
-
+            response = self.client.chat.completions.create(**request_params)
+            response_dict = self._model_to_dict(response)
             logger.info(
-                f"[OPEN_AI] call_with_tools reply, model={response.get('model')}, "
-                f"total_tokens={response.get('usage', {}).get('total_tokens', 0)}"
+                f"[OPEN_AI] call_with_tools reply, model={response_dict.get('model')}, "
+                f"total_tokens={response_dict.get('usage', {}).get('total_tokens', 0)}"
             )
-
-            return response
+            return response_dict
 
         except Exception as e:
             logger.error(f"[OPEN_AI] sync response error: {e}")
             raise
 
     def _handle_stream_response(self, request_params):
-        """Handle streaming OpenAI ChatCompletion API response"""
         try:
-            stream = openai.ChatCompletion.create(**request_params)
+            stream = self.client.chat.completions.create(**request_params)
 
             for chunk in stream:
-                yield chunk
+                yield self._model_to_dict(chunk)
 
         except Exception as e:
             logger.error(f"[OPEN_AI] stream response error: {e}")

@@ -180,7 +180,12 @@ class ModelScopeBot(Bot):
                     return result
 
         except Exception as e:
-            logger.exception(e)
+            logger.error(
+                f"[MODELSCOPE] reply_text error | model={self.args.get('model')} | "
+                f"session_id={session.session_id} | retry={retry_count} | "
+                f"message_count={len(session.messages)} | error={e}",
+                exc_info=True,
+            )
             need_retry = retry_count < 2
             result = {"completion_tokens": 0, "content": "我现在有点累了，等会再来吧"}
             if need_retry:
@@ -547,7 +552,10 @@ class ModelScopeBot(Bot):
                 return self._handle_sync_response(session, args)
 
         except Exception as e:
-            logger.error("[MODELSCOPE] call_with_tools error: {}".format(e))
+            logger.error(
+                f"[MODELSCOPE] call_with_tools error: {e}",
+                exc_info=True,
+            )
             error_msg = "{}".format(e)
 
             def error_generator():

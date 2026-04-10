@@ -1,93 +1,40 @@
 """
-OpenAI compatibility layer for different versions.
+OpenAI compatibility layer for OpenAI SDK >= 2.0.
 
-This module provides a compatibility layer between OpenAI library versions:
-- OpenAI < 1.0 (old API with openai.error module)
-- OpenAI >= 1.0 (new API with direct exception imports)
+This module provides a unified import for OpenAI exceptions across the project.
 """
 
-try:
-    # Try new OpenAI >= 1.0 API
-    from openai import (
-        OpenAIError,
-        RateLimitError,
-        APIError,
-        APIConnectionError,
-        AuthenticationError,
-        APITimeoutError,
-        BadRequestError,
-    )
+from openai import (
+    OpenAIError,
+    RateLimitError,
+    APIError,
+    APIConnectionError,
+    AuthenticationError,
+    APITimeoutError,
+    BadRequestError,
+    NotFoundError,
+)
 
-    # Create a mock error module for backward compatibility
-    class ErrorModule:
-        OpenAIError = OpenAIError
-        RateLimitError = RateLimitError
-        APIError = APIError
-        APIConnectionError = APIConnectionError
-        AuthenticationError = AuthenticationError
-        Timeout = APITimeoutError  # Renamed in new version
-        InvalidRequestError = BadRequestError  # Renamed in new version
+# Aliases for backward compatibility with code using old openai.error names
+Timeout = APITimeoutError
+InvalidRequestError = BadRequestError
 
-    error = ErrorModule()
 
-    # Also export with new names
-    Timeout = APITimeoutError
-    InvalidRequestError = BadRequestError
+# Provide a mock "error" module for any legacy code that imports openai.error
+class _ErrorModule:
+    OpenAIError = OpenAIError
+    RateLimitError = RateLimitError
+    APIError = APIError
+    APIConnectionError = APIConnectionError
+    AuthenticationError = AuthenticationError
+    InvalidRequestError = InvalidRequestError
+    Timeout = Timeout
+    BadRequestError = BadRequestError
+    APITimeoutError = APITimeoutError
 
-except ImportError:
-    # Fall back to old OpenAI < 1.0 API
-    try:
-        import openai.error as error
 
-        # Export individual exceptions for direct import
-        OpenAIError = error.OpenAIError
-        RateLimitError = error.RateLimitError
-        APIError = error.APIError
-        APIConnectionError = error.APIConnectionError
-        AuthenticationError = error.AuthenticationError
-        InvalidRequestError = error.InvalidRequestError
-        Timeout = error.Timeout
-        BadRequestError = error.InvalidRequestError  # Alias
-        APITimeoutError = error.Timeout  # Alias
-    except (ImportError, AttributeError):
-        # Neither version works, create dummy classes
-        class OpenAIError(Exception):
-            pass
+error = _ErrorModule()
 
-        class RateLimitError(OpenAIError):
-            pass
-
-        class APIError(OpenAIError):
-            pass
-
-        class APIConnectionError(OpenAIError):
-            pass
-
-        class AuthenticationError(OpenAIError):
-            pass
-
-        class InvalidRequestError(OpenAIError):
-            pass
-
-        class Timeout(OpenAIError):
-            pass
-
-        BadRequestError = InvalidRequestError
-        APITimeoutError = Timeout
-
-        # Create error module
-        class ErrorModule:
-            OpenAIError = OpenAIError
-            RateLimitError = RateLimitError
-            APIError = APIError
-            APIConnectionError = APIConnectionError
-            AuthenticationError = AuthenticationError
-            InvalidRequestError = InvalidRequestError
-            Timeout = Timeout
-
-        error = ErrorModule()
-
-# Export all for easy import
 __all__ = [
     "error",
     "OpenAIError",
@@ -99,4 +46,5 @@ __all__ = [
     "Timeout",
     "BadRequestError",
     "APITimeoutError",
+    "NotFoundError",
 ]
