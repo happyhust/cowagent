@@ -10,22 +10,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Directory | Purpose |
 |-----------|---------|
-| `app.py` | Main entry point - starts the ChannelManager which launches channels |
-| `config.py` | All configuration definitions, loads `config.json` |
-| `channel/` | Messaging channel implementations (weixin, feishu, dingtalk, qq, web, terminal, etc.) |
-| `models/` | LLM bot implementations (OpenAI, Claude, Gemini, Qwen, GLM, DeepSeek, etc.) |
-| `bridge/` | Glue between channels and models - `Bridge` routes requests, `AgentBridge` handles Agent mode |
-| `agent/` | Agent system: task planning, memory, skills, tools, protocol definitions |
-| `plugins/` | Plugin system (hello, keyword, dungeon, role, etc.) |
-| `cli/` | Cow CLI command-line interface |
-| `voice/` | Voice/speech recognition and synthesis |
-| `translate/` | Translation services |
-| `common/` | Shared utilities (logging, singleton, config, memory) |
+| `cowagent/__main__.py` | Main entry point - starts the ChannelManager which launches channels |
+| `cowagent/config.py` | All configuration definitions, loads `config.json` |
+| `cowagent/channel/` | Messaging channel implementations (weixin, feishu, dingtalk, qq, web, terminal, etc.) |
+| `cowagent/models/` | LLM bot implementations (OpenAI, Claude, Gemini, Qwen, GLM, DeepSeek, etc.) |
+| `cowagent/bridge/` | Glue between channels and models - `Bridge` routes requests, `AgentBridge` handles Agent mode |
+| `cowagent/agent/` | Agent system: task planning, memory, skills, tools, protocol definitions |
+| `cowagent/plugins/` | Plugin system (hello, keyword, dungeon, role, etc.) |
+| `cowagent/cli/` | Cow CLI command-line interface |
+| `cowagent/voice/` | Voice/speech recognition and synthesis |
+| `cowagent/translate/` | Translation services |
+| `cowagent/common/` | Shared utilities (logging, singleton, config, memory) |
+| `bridge/` | Frontend UI files (web chat interface) |
+| `scripts/` | Shell/PowerShell scripts for service management |
 
 ## Architecture
 
 ```
-app.py → ChannelManager → Channel(s) → ChatChannel → Bridge/AgentBridge → Model Bot
+python -m cowagent → ChannelManager → Channel(s) → ChatChannel → Bridge/AgentBridge → Model Bot
                                                     ↕ plugins
 ```
 
@@ -39,9 +41,9 @@ app.py → ChannelManager → Channel(s) → ChatChannel → Bridge/AgentBridge 
 
 ### Run
 ```bash
-python3 app.py           # Standard run
-python3 app.py --cmd     # Terminal/CLI mode
-cow start                # Via Cow CLI (requires pip install -e .)
+python3 -m cowagent           # Standard run
+python3 -m cowagent --cmd     # Terminal/CLI mode
+cow start                     # Via Cow CLI (requires pip install -e .)
 ```
 
 ### Install Dependencies
@@ -65,22 +67,22 @@ sudo docker logs -f chatgpt-on-wechat   # View logs
 
 ## Adding a New Channel
 
-1. Create a new directory under `channel/your_channel/`
+1. Create a new directory under `cowagent/channel/your_channel/`
 2. Implement a channel class extending `ChatChannel` with `startup()`, `handle_msg()`, `send()` methods
-3. Register in `channel/channel_factory.py`
-4. See `channel/feishu/feishu_channel.py` as reference implementation
+3. Register in `cowagent/channel/channel_factory.py`
+4. See `cowagent/channel/feishu/feishu_channel.py` as reference implementation
 
 ## Adding a New Model
 
-1. Create bot class in `models/` implementing `reply(query, context)` method
-2. Register in `models/bot_factory.py`
-3. Add model type constant in `common/const.py`
-4. Add routing logic in `bridge/bridge.py`
+1. Create bot class in `cowagent/models/` implementing `reply(query, context)` method
+2. Register in `cowagent/models/bot_factory.py`
+3. Add model type constant in `cowagent/common/const.py`
+4. Add routing logic in `cowagent/bridge/bridge.py`
 
 ## Adding a New Agent Tool
 
-1. Create tool class in `agent/tools/` extending `BaseTool`
-2. Register in `agent/tools/tool_manager.py`
+1. Create tool class in `cowagent/agent/tools/` extending `BaseTool`
+2. Register in `cowagent/agent/tools/tool_manager.py`
 
 ## Important Patterns
 

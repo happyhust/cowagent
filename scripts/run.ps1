@@ -33,10 +33,10 @@ function Write-Info  { param([string]$M) Write-Host $M -ForegroundColor Cyan   }
 $ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { $PWD.Path }
 $BaseDir   = Split-Path $ScriptDir -Parent
 
-$IsProjectDir = (Test-Path "$BaseDir\app.py") -and (Test-Path "$BaseDir\config-template.json")
+$IsProjectDir = (Test-Path "$BaseDir\cowagent\__main__.py") -and (Test-Path "$BaseDir\config-template.json")
 if (-not $IsProjectDir) {
     $BaseDir = $PWD.Path
-    $IsProjectDir = (Test-Path "$BaseDir\app.py") -and (Test-Path "$BaseDir\config-template.json")
+    $IsProjectDir = (Test-Path "$BaseDir\cowagent\__main__.py") -and (Test-Path "$BaseDir\config-template.json")
 }
 
 # ── Python detection ─────────────────────────────────────────────
@@ -341,7 +341,7 @@ function Start-CowAgent {
         & cow start
     } else {
         Write-Warn "cow CLI not found, starting directly..."
-        & $PythonCmd "$BaseDir\app.py"
+        & $PythonCmd -m cowagent
     }
 }
 
@@ -457,7 +457,7 @@ function Update-Project {
     # Start via python -m cli.cli instead of cow.exe, because the exe may
     # still be cached/locked from the previous installation on Windows.
     Write-Cow "Starting CowAgent..."
-    & $PythonCmd -m cli.cli start
+    & $PythonCmd -m cowagent.cli.cli start
 }
 
 # ── main ──────────────────────────────────────────────────────────

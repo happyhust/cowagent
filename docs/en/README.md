@@ -124,7 +124,7 @@ Fill in your model API key and channel type in `config.json`. See the [configura
 
 ```bash
 cow start              # recommended, requires Cow CLI
-python3 app.py         # or run directly
+python3 -m cowagent         # or run directly
 ```
 
 For server deployment, use `cow` commands to manage the service:
@@ -141,7 +141,7 @@ cow update             # pull latest code and restart
 Or use the traditional way:
 
 ```bash
-nohup python3 app.py & tail -f nohup.out
+nohup python3 -m cowagent & tail -f nohup.out
 ```
 
 ### Docker Deployment

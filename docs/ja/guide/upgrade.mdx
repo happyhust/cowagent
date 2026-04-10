@@ -43,8 +43,8 @@ cow restart
 ./run.sh restart
 
 # または nohup で直接実行
-kill $(ps -ef | grep app.py | grep -v grep | awk '{print $2}')
-nohup python3 app.py & tail -f nohup.out
+kill $(ps -ef | grep cowagent | grep -v grep | awk '{print $2}')
+nohup python3 -m cowagent & tail -f nohup.out
 ```
 
 ## Docker アップグレード

@@ -45,7 +45,7 @@ cow help
 ```
 
 <Note>
-  This step is recommended. After installation you can use `cow start`, `cow stop`, `cow update` to manage the service, and `cow skill` to manage skills. Without the CLI, you can use `./run.sh` or `python3 app.py` to run.
+  This step is recommended. After installation you can use `cow start`, `cow stop`, `cow update` to manage the service, and `cow skill` to manage skills. Without the CLI, you can use `./run.sh` or `python3 -m cowagent` to run.
 </Note>
 
 ### 4. Configure
@@ -69,7 +69,7 @@ cow start
 **Or run locally in foreground:**
 
 ```bash
-python3 app.py
+python3 -m cowagent
 ```
 
 By default, the Web console starts. Access `http://localhost:9899` to chat.
@@ -77,7 +77,7 @@ By default, the Web console starts. Access `http://localhost:9899` to chat.
 **Background run on server (without CLI):**
 
 ```bash
-nohup python3 app.py & tail -f nohup.out
+nohup python3 -m cowagent & tail -f nohup.out
 ```
 
 <Tip>

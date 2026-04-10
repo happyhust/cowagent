@@ -47,7 +47,7 @@ cow help
 ```
 
 <Note>
-  此步骤为推荐操作。安装后可以使用 `cow start`、`cow stop`、`cow update` 等命令管理服务，也可以使用 `cow skill` 管理技能。如果不安装 CLI，可以使用 `./run.sh` 或 `python3 app.py` 运行。
+  此步骤为推荐操作。安装后可以使用 `cow start`、`cow stop`、`cow update` 等命令管理服务，也可以使用 `cow skill` 管理技能。如果不安装 CLI，可以使用 `./run.sh` 或 `python3 -m cowagent` 运行。
 </Note>
 
 ### 3.1 安装浏览器工具（可选）
@@ -85,7 +85,7 @@ cow start
 **或者本地前台运行：**
 
 ```bash
-python3 app.py
+python3 -m cowagent
 ```
 
 运行后默认启动 Web 控制台，访问 `http://localhost:9899` 开始对话和管理Agent。
@@ -93,7 +93,7 @@ python3 app.py
 **服务器后台运行（不使用 CLI 时）：**
 
 ```bash
-nohup python3 app.py & tail -f nohup.out
+nohup python3 -m cowagent & tail -f nohup.out
 ```
 
 <Tip>

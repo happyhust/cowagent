@@ -240,7 +240,7 @@ cow install-browser
 
 ```bash
 cow start              # 推荐，需先安装 Cow CLI
-python3 app.py         # 或直接运行，windows 环境下该命令通常为 python app.py
+python3 -m cowagent    # 或直接运行，windows 环境下该命令通常为 python -m cowagent
 ```
 
 运行后默认会启动 web 服务，可通过访问 `http://localhost:9899/chat` 在网页端对话。
@@ -264,7 +264,7 @@ cow update             # 拉取最新代码并重启
 也可以使用传统方式后台运行：
 
 ```bash
-nohup python3 app.py & tail -f nohup.out
+nohup python3 -m cowagent & tail -f nohup.out
 ```
 
 此外，项目 `scripts/run.sh` 脚本也支持一键管理服务，包括 `./scripts/run.sh start`、`./scripts/run.sh stop`、`./scripts/run.sh restart` 等命令，执行 `./scripts/run.sh help` 可查看全部用法。

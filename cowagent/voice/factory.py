@@ -1,0 +1,57 @@
+"""
+voice factory
+"""
+
+
+def create_voice(voice_type):
+    """
+    create a voice instance
+    :param voice_type: voice type code
+    :return: voice instance
+    """
+    if voice_type == "baidu":
+        from cowagent.voice.baidu.baidu_voice import BaiduVoice
+
+        return BaiduVoice()
+    elif voice_type == "google":
+        from cowagent.voice.google.google_voice import GoogleVoice
+
+        return GoogleVoice()
+    elif voice_type == "openai":
+        from cowagent.voice.openai.openai_voice import OpenaiVoice
+
+        return OpenaiVoice()
+    elif voice_type == "pytts":
+        from cowagent.voice.pytts.pytts_voice import PyttsVoice
+
+        return PyttsVoice()
+    elif voice_type == "azure":
+        from cowagent.voice.azure.azure_voice import AzureVoice
+
+        return AzureVoice()
+    elif voice_type == "elevenlabs":
+        from cowagent.voice.elevent.elevent_voice import ElevenLabsVoice
+
+        return ElevenLabsVoice()
+
+    elif voice_type == "linkai":
+        from cowagent.voice.linkai.linkai_voice import LinkAIVoice
+
+        return LinkAIVoice()
+    elif voice_type == "ali":
+        from cowagent.voice.ali.ali_voice import AliVoice
+
+        return AliVoice()
+    elif voice_type == "edge":
+        from cowagent.voice.edge.edge_voice import EdgeVoice
+
+        return EdgeVoice()
+    elif voice_type == "xunfei":
+        from cowagent.voice.xunfei.xunfei_voice import XunfeiVoice
+
+        return XunfeiVoice()
+    elif voice_type == "tencent":
+        from cowagent.voice.tencent.tencent_voice import TencentVoice
+
+        return TencentVoice()
+    raise RuntimeError

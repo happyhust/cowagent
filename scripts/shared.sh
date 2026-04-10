@@ -168,7 +168,7 @@ get_pid() {
         fi
     fi
     ensure_python_cmd
-    ps ax | grep -i app.py | grep "${BASE_DIR}" | grep "$PYTHON_CMD" | grep -v grep | awk '{print $1}' | grep -E '^[0-9]+$' | head -1
+    ps ax | grep -i "cowagent" | grep "${BASE_DIR}" | grep "$PYTHON_CMD" | grep -v grep | awk '{print $1}' | grep -E '^[0-9]+$' | head -1
 }
 
 # Ensure PYTHON_CMD is set

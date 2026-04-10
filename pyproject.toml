@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-cow = "cli.cli:main"
+cow = "cowagent.cli.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["cli*"]
+include = ["cowagent*"]

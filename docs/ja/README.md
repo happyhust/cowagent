@@ -124,7 +124,7 @@ cp config-template.json config.json
 
 ```bash
 cow start              # 推奨、Cow CLI が必要
-python3 app.py         # または直接実行
+python3 -m cowagent         # または直接実行
 ```
 
 サーバーデプロイでは、`cow` コマンドでサービスを管理できます：
@@ -141,7 +141,7 @@ cow update             # 最新コードを取得して再起動
 または従来の方法で実行：
 
 ```bash
-nohup python3 app.py & tail -f nohup.out
+nohup python3 -m cowagent & tail -f nohup.out
 ```
 
 ### Dockerデプロイ

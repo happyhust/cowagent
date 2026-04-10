@@ -5,7 +5,7 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 BASE_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 
 # Log file path — override via environment variable if needed
-LOG_FILE="${COW_LOG_FILE:-$HOME/cow/cowagent.log}"
+LOG_FILE="${COW_LOG_FILE:-${BASE_DIR}/logs/cowagent.log}"
 
 source "$SCRIPT_DIR/shared.sh"
 
@@ -14,7 +14,7 @@ start_project() {
     LOG_DIR=$(dirname "$LOG_FILE")
     mkdir -p "$LOG_DIR"
 
-    nohup $PYTHON_CMD "${BASE_DIR}/app.py" >> "${LOG_FILE}" 2>&1 &
+    nohup $PYTHON_CMD -m cowagent >> "${LOG_FILE}" 2>&1 &
     echo $! > "${BASE_DIR}/cowagent.pid"
     echo -e "${GREEN}${EMOJI_COW} CowAgent started (PID=$(cat "${BASE_DIR}/cowagent.pid"))${NC}"
     echo -e "${GREEN}Log: ${LOG_FILE}${NC}"
